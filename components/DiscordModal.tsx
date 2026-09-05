@@ -99,7 +99,7 @@ export const DiscordModal: React.FC<DiscordModalProps> = ({ isOpen, onClose, onA
               <div className="flex items-start gap-3">
                 <Shield className="w-5 h-5 text-[#23a55a] shrink-0 mt-0.5" />
                 <div>
-                  <h4 className="text-xs font-bold text-white">THE MISLICKERZ BOT</h4>
+                  <h4 className="text-xs font-bold text-white">MISCLICKERZ BOT</h4>
                   <p className="text-[11px] text-gray-400 leading-relaxed mt-0.5">
                     Requests permission to sync your Discord identity with the RuneLite in-game client statistics.
                   </p>

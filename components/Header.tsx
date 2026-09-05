@@ -68,7 +68,7 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="flex items-center gap-2.5">
             <img
               src="/src/assets/images/mislick_crest_1783924581674.jpg"
-              alt="The Mislickerz Crest"
+              alt="Misclickerz Crest"
               className="w-8 h-8 rounded-full border border-osrs-gold/30 shadow-sm object-cover hidden sm:block"
               referrerPolicy="no-referrer"
             />

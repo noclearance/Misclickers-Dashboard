@@ -89,7 +89,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <div className="absolute inset-0 bg-osrs-gold/15 rounded-full blur-sm opacity-75 group-hover:opacity-100 transition-opacity"></div>
               <img 
                 src="/src/assets/images/mislick_crest_1783924581674.jpg" 
-                alt="The Mislickerz Crest" 
+                alt="Misclickerz Crest" 
                 className="w-11 h-11 rounded-full border-2 border-osrs-gold/40 group-hover:border-osrs-gold/70 transition-colors shadow-md object-cover relative z-10"
                 referrerPolicy="no-referrer"
               />
@@ -100,7 +100,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
             <div className="min-w-0">
               <h1 className="font-serif font-black text-sm sm:text-base tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-osrs-gold via-yellow-200 to-amber-500 osrs-shadow leading-tight truncate">
-                THE MISLICKERZ
+                MISCLICKERZ
               </h1>
               <span className="text-[9px] uppercase font-mono tracking-widest text-osrs-gold/70 block mt-0.5">
                 Clan Hub & Bot

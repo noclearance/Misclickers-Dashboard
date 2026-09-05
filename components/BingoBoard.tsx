@@ -162,7 +162,7 @@ export const BingoBoard: React.FC = () => {
           <div className="flex items-center gap-2 flex-wrap">
             <span className="flex items-center gap-1 text-osrs-gold text-xs font-mono font-bold uppercase tracking-wider">
               <Flame className="w-4 h-4 text-osrs-gold animate-pulse" />
-              <span>Misclickerss Summer Campaign</span>
+              <span>Misclickerz Summer Campaign</span>
             </span>
             <span className="flex items-center gap-1 text-[9px] font-mono font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/25 px-2 py-0.5 rounded-full">
               <Bot className="w-3 h-3 text-indigo-400" />
@@ -311,7 +311,7 @@ export const BingoBoard: React.FC = () => {
               </button>
 
               <div className="text-[9px] font-mono uppercase text-osrs-gold tracking-widest mb-1 font-bold">
-                Misclickerss Bingo Coordinator
+                Misclickerz Bingo Coordinator
               </div>
               <h4 className="text-lg font-serif font-black text-transparent bg-clip-text bg-gradient-to-r from-osrs-gold to-yellow-200">
                 BINGO REQUIREMENT #{selectedTile.id}

@@ -73,6 +73,24 @@ function recordDebugLog(log: HttpDebugLog) {
   });
 }
 
+function maskSecretValue(value: unknown): unknown {
+  if (typeof value !== 'string') return value;
+  if (value.trim().length === 0) return value;
+  return '••••';
+}
+
+function redactSensitiveHeaders(headers: Record<string, any> | undefined): Record<string, any> | undefined {
+  if (!headers) return headers;
+  const redacted: Record<string, any> = { ...headers };
+  for (const key of Object.keys(redacted)) {
+    const lower = key.toLowerCase();
+    if (lower === 'authorization' || lower === 'x-venny-secret' || lower === 'x-api-key') {
+      redacted[key] = maskSecretValue(redacted[key]);
+    }
+  }
+  return redacted;
+}
+
 /**
  * Unauthorized Event Payload definition
  */
@@ -132,8 +150,8 @@ export const getVennyApiKey = (): string => {
     return process.env.VENNY_API_KEY;
   }
 
-  // 4. Default fallback key configured for development
-  return 'venny_mislickerz_secret_key_2026';
+  // 4. Default non-sensitive placeholder for local development
+  return 'configured-secret';
 };
 
 /**
@@ -257,6 +275,7 @@ apiClient.interceptors.request.use(
     const serializedHeaders = typeof (config.headers as any)?.toJSON === 'function'
       ? (config.headers as any).toJSON()
       : { ...config.headers };
+    const redactedHeaders = redactSensitiveHeaders(serializedHeaders);
 
     // Explicitly log the intercepted request URL, method, and authentication headers
     if (isDebugLoggingEnabled && typeof console !== 'undefined') {
@@ -267,10 +286,10 @@ apiClient.interceptors.request.use(
           url,
           method,
           isVennyEndpoint: url.startsWith('/api/'),
-          apiKey: apiKey || '(none)',
+          apiKey: apiKey ? 'configured' : '(none)',
           apiKeyInjected: Boolean(apiKey),
           apiKeySource: runtimeApiKey ? 'runtime' : 'env/storage/fallback',
-          headers: serializedHeaders,
+          headers: redactedHeaders,
           params: config.params,
           body: config.data,
         }
@@ -289,7 +308,7 @@ apiClient.interceptors.request.use(
       type: 'request',
       method,
       url,
-      requestHeaders: serializedHeaders,
+      requestHeaders: redactedHeaders,
       requestParams: config.params,
       requestData: config.data,
       isMockOrFallback: false,
@@ -392,7 +411,7 @@ apiClient.interceptors.response.use(
           status,
           durationMs,
           error: errorMessage,
-          headers: error.config?.headers,
+          headers: redactSensitiveHeaders(error.config?.headers as any),
           fullResponseBody: responseData,
         }
       );

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   Trophy, Swords, Sparkles, Search, User, Shield, Timer, 
   Coins, ShieldAlert, Skull, Flame, Plus, RefreshCw, MessageSquare, 
@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import type { BotRewardAnnouncement } from '../types';
 import { useDashboardData } from '../hooks/useDashboardData';
+import { getBotSyncStatus } from '../services/api';
 import { useGlobalLoading } from '../context/GlobalLoadingProvider';
 import { ActivityFeed } from './ActivityFeed';
 import { RaffleComponent } from './RaffleComponent';
@@ -56,6 +57,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
   const [isRewardModalOpen, setIsRewardModalOpen] = useState<boolean>(false);
   const [selectedReward, setSelectedReward] = useState<BotRewardAnnouncement | null>(null);
+  const [bridgeStatus, setBridgeStatus] = useState<'online' | 'degraded' | 'offline'>('offline');
+  const [bridgeStatusLabel, setBridgeStatusLabel] = useState<'Online' | 'Degraded' | 'Offline'>('Offline');
 
   // Filters & Interactivity State
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -66,6 +69,23 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const [newIncidentType, setNewIncidentType] = useState<string>('Prayer Flicker Failure');
   const [newIncidentDesc, setNewIncidentDesc] = useState<string>('');
   const [newIncidentDanger, setNewIncidentDanger] = useState<'mild' | 'moderate' | 'catastrophic'>('mild');
+
+  useEffect(() => {
+    let mounted = true;
+    const loadBotStatus = async () => {
+      const status = await getBotSyncStatus();
+      if (!mounted || !status) return;
+      setBridgeStatus(status.bridgeStatus || 'offline');
+      setBridgeStatusLabel(status.bridgeStatusLabel || 'Offline');
+    };
+
+    loadBotStatus();
+    const timer = setInterval(loadBotStatus, 60000);
+    return () => {
+      mounted = false;
+      clearInterval(timer);
+    };
+  }, []);
 
   // Form submit to log custom incident to live backend
   const handleLogCustomIncident = async (e: React.FormEvent) => {
@@ -118,6 +138,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
     setSelectedReward(reward || rewards[0]);
     setIsRewardModalOpen(true);
   };
+  const formatRewardChannel = (channel?: string) =>
+    channel === '#events' ? '#events (Bingo & events)' : (channel || '#announcements');
+  const bridgeStatusBadgeClass =
+    bridgeStatus === 'online'
+      ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'
+      : bridgeStatus === 'degraded'
+      ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+      : 'bg-rose-500/20 text-rose-300 border-rose-500/40';
 
   return (
     <div id="dashboard-view" className="space-y-8 max-w-7xl mx-auto animate-fade-in">
@@ -171,7 +199,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             <span>Wise Old Man Group #24942 • World 677</span>
           </div>
           <h2 className="text-2xl sm:text-3xl font-serif font-black text-transparent bg-clip-text bg-gradient-to-r from-osrs-gold via-yellow-100 to-amber-500 tracking-wide">
-            MISCLICKERSS HEADQUARTERS
+            MISCLICKERZ HEADQUARTERS
           </h2>
           <p className="text-xs text-gray-400 max-w-xl leading-relaxed">
             Live synchronization for clan highscores, active Skill/Boss of the Week competitions, community raffles, and Venny bot event integration.
@@ -473,13 +501,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 <div>
                   <div className="flex items-center gap-2">
                     <h4 className="text-sm font-bold text-white font-serif">Venny Discord Bot Bridge</h4>
-                    <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-indigo-500/15 text-indigo-300 border border-indigo-500/35 flex items-center gap-1">
-                      <span className="w-1 h-1 rounded-full bg-indigo-300"></span>
-                      Connected
+                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-mono font-bold border flex items-center gap-1 ${bridgeStatusBadgeClass}`}>
+                      <span className="w-1 h-1 rounded-full bg-current animate-pulse"></span>
+                      {bridgeStatusLabel}
                     </span>
                   </div>
                   <p className="text-xs text-gray-400 mt-0.5">
-                    REST API endpoints active on <code className="text-indigo-300 font-mono text-[11px]">/api/bot/webhook</code> for live RuneLite & Discord /misclick triggers.
+                    Health-driven bridge status from <code className="text-indigo-300 font-mono text-[11px]">https://grazybot.onrender.com/health</code>, with live sync on <code className="text-indigo-300 font-mono text-[11px]">/api/bot/webhook</code>.
                   </p>
                 </div>
               </div>
@@ -757,7 +785,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                               <div className="flex items-center gap-2">
                                 <span className="inline-flex items-center gap-1 text-[10px] font-mono text-[#5865F2] bg-[#5865F2]/15 px-2 py-0.5 rounded border border-[#5865F2]/30">
                                   <MessageSquare className="w-3 h-3" />
-                                  {comp.rewards.discordChannel || '#clan-announcements'}
+                                  {formatRewardChannel(comp.rewards.discordChannel)}
                                 </span>
                                 <button
                                   onClick={() => {
@@ -777,7 +805,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                         secondPlace: comp.rewards.secondPlace,
                                         thirdPlace: comp.rewards.thirdPlace,
                                         sponsor: comp.rewards.sponsor,
-                                        discordChannel: comp.rewards.discordChannel || '#clan-announcements',
+                                        discordChannel: comp.rewards.discordChannel || '#announcements',
                                         announcedBy: 'Venny Discord Bot',
                                         timestamp: 'Live Active',
                                         active: true,
@@ -1103,7 +1131,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
                     // Comical custom rank tags based on score/points
                     const getCustomRank = (pts: number) => {
-                      if (pts >= 11000) return 'Grandmaster Mislicker';
+                      if (pts >= 11000) return 'Grandmaster Misclicker';
                       if (pts >= 9000) return 'Expert Tile Clipper';
                       if (pts >= 7000) return 'Brew Chugging Hero';
                       if (pts >= 5000) return 'Slayer Choke Rookie';

@@ -114,6 +114,11 @@ export interface ClanActivity {
 
 export interface BotSyncStatus {
   status: 'connected' | 'idle' | 'unconfigured';
+  bridgeStatus?: 'online' | 'degraded' | 'offline';
+  bridgeStatusLabel?: 'Online' | 'Degraded' | 'Offline';
+  bridgeStatusDetail?: string;
+  bridgeCheckedAt?: string;
+  bridgeHealthSource?: string;
   botName: string;
   guildName: string;
   guildId?: string;

@@ -43,7 +43,7 @@ export {
 };
 export type { UnauthorizedEventDetail, HttpDebugLog, HttpDebugListener };
 
-// Real Wise Old Man Group ID for The Mislickerz
+// Real Wise Old Man Group ID for Misclickerz
 export const REAL_WOM_GROUP_ID = 24942;
 
 /**
@@ -348,7 +348,7 @@ export async function getItemPrice(itemName: string): Promise<OsrsItem | null> {
   try {
     const url = `https://prices.runescape.wiki/api/v1/osrs/mapping`;
     const res = await fetch(url, {
-      headers: { 'User-Agent': 'TheMislickerz-WebHub/1.0' }
+      headers: { 'User-Agent': 'Misclickerz-WebHub/1.0' }
     });
     if (res.ok) {
       const items: Array<{ id: number; name: string; high?: number; low?: number }> = await res.json();
@@ -356,7 +356,7 @@ export async function getItemPrice(itemName: string): Promise<OsrsItem | null> {
       if (match) {
         // Fetch current instant prices
         const priceRes = await fetch(`https://prices.runescape.wiki/api/v1/osrs/latest?id=${match.id}`, {
-          headers: { 'User-Agent': 'TheMislickerz-WebHub/1.0' }
+          headers: { 'User-Agent': 'Misclickerz-WebHub/1.0' }
         });
         if (priceRes.ok) {
           const priceData = await priceRes.json();

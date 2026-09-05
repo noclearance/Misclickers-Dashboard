@@ -17,6 +17,8 @@ export const RewardAnnouncementBanner: React.FC<RewardAnnouncementBannerProps> =
   onOpenBotModal,
 }) => {
   const [activeIdx, setActiveIdx] = useState(0);
+  const formatRewardChannel = (channel?: string) =>
+    channel === '#events' ? '#events (Bingo & events)' : (channel || '#announcements');
 
   if (!rewards || rewards.length === 0) {
     return null;
@@ -44,7 +46,7 @@ export const RewardAnnouncementBanner: React.FC<RewardAnnouncementBannerProps> =
 
             <span className="inline-flex items-center gap-1 text-[11px] font-mono text-osrs-gold bg-osrs-gold/10 px-2.5 py-0.5 rounded-full border border-osrs-gold/30">
               <Radio className="w-3 h-3 text-emerald-400 animate-ping" />
-              Live in {current.discordChannel || '#clan-announcements'}
+              Live in {formatRewardChannel(current.discordChannel)}
             </span>
 
             {rewards.length > 1 && (
@@ -120,7 +122,7 @@ export const RewardAnnouncementBanner: React.FC<RewardAnnouncementBannerProps> =
               <span>{current.prizePool}</span>
             </div>
             <span className="text-[10px] text-gray-400 block mt-0.5">
-              Sponsor: <strong className="text-gray-200">{current.sponsor || 'Misclickerss Treasury'}</strong>
+              Sponsor: <strong className="text-gray-200">{current.sponsor || 'Misclickerz Treasury'}</strong>
             </span>
           </div>
 

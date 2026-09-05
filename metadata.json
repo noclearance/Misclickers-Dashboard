@@ -1,6 +1,6 @@
 {
-  "name": "The Mislickerz - OSRS Clan Dashboard & Bot Hub",
-  "description": "Live web hub and Discord/RuneLite bot bridge for The Mislickerz OSRS clan, featuring highscores, raffles, bingo boards, live misclick tracking, and REST API sync for the Venny bot.",
+  "name": "Misclickerz - OSRS Clan Dashboard & Bot Hub",
+  "description": "Live web hub and Discord/RuneLite bot bridge for the Misclickerz OSRS clan, featuring highscores, raffles, bingo boards, live misclick tracking, and REST API sync for the Venny bot.",
   "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
