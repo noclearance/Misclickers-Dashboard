@@ -11,8 +11,6 @@ import { useGlobalLoading } from '../context/GlobalLoadingProvider';
 import { ActivityFeed } from './ActivityFeed';
 import { RaffleComponent } from './RaffleComponent';
 import { ClanLeaderboard } from './ClanLeaderboard';
-import { RewardAnnouncementBanner } from './RewardAnnouncementBanner';
-import { ClanRewardsFeed } from './ClanRewardsFeed';
 import { DiscordRewardEmbedModal } from './DiscordRewardEmbedModal';
 import { DashboardSkeleton } from './skeletons/DashboardSkeleton';
 import { CompetitionsSkeleton } from './skeletons/CompetitionsSkeleton';
@@ -108,6 +106,18 @@ export const Dashboard: React.FC<DashboardProps> = ({
   // Active competition info
   const primaryComp = competitions.length > 0 ? competitions[0] : null;
   const activeCompTitle = primaryComp ? primaryComp.metric.toUpperCase() : 'NO ACTIVE SOTW';
+  const focusCompetition = primaryComp && primaryComp.participants.length > 0 ? primaryComp : null;
+  const focusTopParticipants = focusCompetition ? focusCompetition.participants.slice(0, 3) : [];
+  const focusReward = focusCompetition
+    ? rewards.find((reward) => reward.competitionId === focusCompetition.id) || null
+    : null;
+  const rewardRailItems = rewards.slice(0, 6);
+
+  const handleOpenReward = (reward?: BotRewardAnnouncement) => {
+    if (!reward && rewards.length === 0) return;
+    setSelectedReward(reward || rewards[0]);
+    setIsRewardModalOpen(true);
+  };
 
   return (
     <div id="dashboard-view" className="space-y-8 max-w-7xl mx-auto animate-fade-in">
@@ -153,7 +163,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
       )}
 
       {/* Main Top Banner */}
-      <section className="relative overflow-hidden bg-gradient-to-r from-osrs-panel to-osrs-dark border border-osrs-gold/15 rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row justify-between items-center gap-6 shadow-glow-gold">
+      <section className="relative overflow-hidden bg-gradient-to-r from-osrs-panel to-osrs-dark border border-osrs-gold/15 rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row justify-between items-center gap-6 shadow-lg">
         <div className="absolute top-0 right-0 w-80 h-80 bg-osrs-gold/5 rounded-full blur-3xl pointer-events-none"></div>
         <div className="space-y-2 text-center md:text-left z-10">
           <div className="flex items-center justify-center md:justify-start gap-2 text-osrs-gold text-xs font-mono font-bold uppercase tracking-widest">
@@ -173,9 +183,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
             <span className="text-base sm:text-lg font-serif font-bold text-osrs-gold mt-1 text-center truncate max-w-[220px]">
               {activeCompTitle}
             </span>
-            <div className="flex items-center gap-1.5 text-[10px] font-mono text-osrs-poison mt-2 bg-osrs-poison/10 px-2 py-0.5 rounded-md">
-              <span className="w-1.5 h-1.5 rounded-full bg-osrs-poison animate-ping"></span>
-              Wise Old Man Synced
+            <div className="flex items-center gap-1.5 text-[10px] font-mono text-gray-300 mt-2 bg-osrs-dark/70 px-2 py-0.5 rounded-md border border-gray-700/70">
+              <span className="w-1.5 h-1.5 rounded-full bg-osrs-gold"></span>
+              Live standings snapshot
             </div>
           </div>
 
@@ -195,7 +205,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         <StatsCardsSkeleton />
       ) : (
         <section id="stats-grid" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          <div className="bg-osrs-panel border border-osrs-gold/10 hover:border-osrs-gold/25 p-5 rounded-2xl shadow-md transition-all group">
+          <div className="bg-osrs-panel border border-gray-800 hover:border-osrs-gold/20 p-5 rounded-2xl shadow-md transition-all group">
             <div className="flex items-center justify-between mb-3">
               <span className="text-[10px] text-gray-500 font-mono uppercase tracking-wider font-bold">Clan Roster</span>
               <User className="w-4 h-4 text-osrs-gold group-hover:scale-110 transition-transform" />
@@ -204,7 +214,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             <div className="mt-1 text-[10px] text-gray-500 font-mono">WOM Group #24942</div>
           </div>
 
-          <div className="bg-osrs-panel border border-osrs-gold/10 hover:border-osrs-gold/25 p-5 rounded-2xl shadow-md transition-all group">
+          <div className="bg-osrs-panel border border-gray-800 hover:border-osrs-gold/20 p-5 rounded-2xl shadow-md transition-all group">
             <div className="flex items-center justify-between mb-3">
               <span className="text-[10px] text-gray-500 font-mono uppercase tracking-wider font-bold">Total Clan XP</span>
               <Trophy className="w-4 h-4 text-osrs-gold group-hover:scale-110 transition-transform" />
@@ -213,7 +223,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             <div className="mt-1 text-[10px] text-gray-500 font-mono">Leader: {topXpLeader}</div>
           </div>
 
-          <div className="bg-osrs-panel border border-osrs-gold/10 hover:border-osrs-gold/25 p-5 rounded-2xl shadow-md transition-all group">
+          <div className="bg-osrs-panel border border-gray-800 hover:border-osrs-gold/20 p-5 rounded-2xl shadow-md transition-all group">
             <div className="flex items-center justify-between mb-3">
               <span className="text-[10px] text-gray-500 font-mono uppercase tracking-wider font-bold">Aggregated Boss Kills</span>
               <Swords className="w-4 h-4 text-osrs-gold group-hover:scale-110 transition-transform" />
@@ -222,7 +232,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             <div className="mt-1 text-[10px] text-gray-500 font-mono">Top Boss Hunter: {topBossLeader}</div>
           </div>
 
-          <div className="bg-osrs-panel border border-osrs-gold/10 hover:border-osrs-gold/25 p-5 rounded-2xl shadow-md transition-all group">
+          <div className="bg-osrs-panel border border-gray-800 hover:border-osrs-gold/20 p-5 rounded-2xl shadow-md transition-all group">
             <div className="flex items-center justify-between mb-3">
               <span className="text-[10px] text-gray-500 font-mono uppercase tracking-wider font-bold">Total Misclicks Registered</span>
               <ShieldAlert className="w-4 h-4 text-osrs-crimson group-hover:scale-110 transition-transform" />
@@ -233,17 +243,178 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </section>
       )}
 
-      {/* Featured Discord Bot Reward Announcement Broadcast Banner */}
-      {rewards.length > 0 && (
-        <RewardAnnouncementBanner 
-          rewards={rewards}
-          onOpenRewardModal={(rew) => {
-            setSelectedReward(rew || rewards[0]);
-            setIsRewardModalOpen(true);
-          }}
-          onOpenBotModal={onOpenBotModal}
-        />
-      )}
+      {/* HQ Focus Split: active event continuation + reward broadcast rail */}
+      <section id="hq-focus-grid" className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+        <article className="xl:col-span-7 bg-gradient-to-br from-osrs-panel to-osrs-dark border border-osrs-gold/20 rounded-2xl p-5 sm:p-6 shadow-xl space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-osrs-gold/10 pb-3.5">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 rounded-xl bg-osrs-gold/10 border border-osrs-gold/25">
+                <Trophy className="w-4.5 h-4.5 text-osrs-gold" />
+              </div>
+              <div>
+                <h3 className="text-sm font-serif font-black tracking-wider text-gray-100 uppercase">Active SOTW / BOTW Continuation</h3>
+                <p className="text-[11px] text-gray-500 font-mono">Follow active standings and payout context from the HQ shell.</p>
+              </div>
+            </div>
+            <a
+              href="https://wiseoldman.net/groups/24942/competitions"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-gray-300 hover:text-osrs-gold border border-gray-700 hover:border-osrs-gold/40 bg-osrs-dark/70 px-3 py-1.5 rounded-lg transition-all shrink-0"
+            >
+              <span>Full WOM Board</span>
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+          </div>
+
+          {!focusCompetition ? (
+            <div className="py-10 text-center text-gray-500 font-mono text-xs border border-dashed border-gray-800 rounded-xl">
+              No active SOTW/BOTW event is currently tracked.
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className={`text-[10px] uppercase font-mono px-2 py-0.5 rounded border font-bold ${
+                  focusCompetition.type === 'Skill of the Week'
+                    ? 'bg-blue-500/15 border-blue-500/35 text-blue-300'
+                    : 'bg-rose-500/15 border-rose-500/35 text-rose-300'
+                }`}>
+                  {focusCompetition.type}
+                </span>
+                <span className="text-[10px] font-mono text-gray-400">
+                  {focusCompetition.participantCount || focusCompetition.participants.length} contenders
+                </span>
+                <span className="text-[10px] font-mono text-gray-500">•</span>
+                <span className="text-[10px] font-mono text-gray-400">
+                  Ends {focusCompetition.endDate || 'soon'}
+                </span>
+              </div>
+
+              <div className="space-y-1">
+                <h4 className="text-xl font-serif font-black text-osrs-gold">
+                  {focusCompetition.metric || focusCompetition.title || 'Active Competition'}
+                </h4>
+                <p className="text-xs text-gray-400 font-mono">
+                  Leader:{' '}
+                  <span className="text-gray-200 font-semibold">
+                    {focusCompetition.participants[0]?.username || 'N/A'}
+                  </span>
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {focusTopParticipants.map((participant, idx) => {
+                  const isSkill = focusCompetition.type === 'Skill of the Week';
+                  const value = isSkill ? (participant.xpGained || 0) : (participant.bossKc || 0);
+                  const displayValue = isSkill ? `${(value / 1_000_000).toFixed(2)}M XP` : `${value.toLocaleString()} KC`;
+                  const positionLabel = idx === 0 ? '1st' : idx === 1 ? '2nd' : '3rd';
+                  return (
+                    <div
+                      key={participant.id}
+                      className="bg-osrs-dark/70 border border-gray-800 rounded-xl px-3 py-3 space-y-1.5"
+                    >
+                      <div className="flex items-center justify-between text-[11px] font-mono">
+                        <span className="text-gray-400">{positionLabel}</span>
+                        <span className="text-osrs-gold font-semibold">{displayValue}</span>
+                      </div>
+                      <div className="text-sm text-gray-100 font-semibold truncate">{participant.username}</div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {focusReward && (
+                <div className="bg-osrs-dark/65 border border-osrs-gold/20 rounded-xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <p className="text-[10px] uppercase tracking-widest font-mono text-gray-500">Prize Pool</p>
+                    <p className="text-sm font-bold text-osrs-gold">{focusReward.prizePool}</p>
+                  </div>
+                  <button
+                    onClick={() => handleOpenReward(focusReward)}
+                    className="inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-gray-200 hover:text-white border border-gray-700 hover:border-osrs-gold/40 bg-osrs-panelLight/60 px-3 py-1.5 rounded-lg transition-all shrink-0"
+                  >
+                    <span>Browse Broadcast</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </article>
+
+        <article className="xl:col-span-5 bg-[#121316] border border-osrs-gold/15 rounded-2xl p-5 shadow-xl flex flex-col min-h-[420px]">
+          <div className="flex items-center justify-between gap-3 border-b border-gray-800 pb-3.5 mb-3.5">
+            <div>
+              <h3 className="text-sm font-serif font-black tracking-wider text-gray-100 uppercase">Reward Broadcast Rail</h3>
+              <p className="text-[11px] text-gray-500 font-mono mt-1">Compact reward cards with separated browse vs payout actions.</p>
+            </div>
+            {onOpenBotModal && (
+              <button
+                onClick={onOpenBotModal}
+                className="text-xs text-indigo-300 hover:text-white border border-indigo-500/35 hover:border-indigo-400 bg-indigo-950/40 px-2.5 py-1.5 rounded-lg transition-all shrink-0"
+              >
+                Bot Hub
+              </button>
+            )}
+          </div>
+
+          {loadingState.rewards ? (
+            <div className="space-y-3">
+              {[0, 1, 2].map((placeholder) => (
+                <div key={placeholder} className="h-40 rounded-xl border border-gray-800 bg-osrs-dark/40 animate-pulse" />
+              ))}
+            </div>
+          ) : rewardRailItems.length === 0 ? (
+            <div className="flex-1 flex items-center justify-center text-center text-xs text-gray-500 border border-dashed border-gray-800 rounded-xl">
+              No reward broadcasts yet.
+            </div>
+          ) : (
+            <div className="space-y-3 overflow-y-auto pr-1 max-h-[440px] custom-scrollbar">
+              {rewardRailItems.map((item) => (
+                <div
+                  key={item.id}
+                  className="bg-[#18191e] border border-gray-800 rounded-xl p-3.5 space-y-3 max-h-[195px] overflow-hidden"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="text-[10px] uppercase font-mono text-gray-500 tracking-wider">{item.eventType}</p>
+                      <h4 className="text-sm font-semibold text-gray-100 truncate mt-0.5">{item.title}</h4>
+                      <p className="text-[11px] text-gray-400 truncate">{item.competitionTitle}</p>
+                    </div>
+                    <span className={`text-[9px] uppercase font-mono px-2 py-0.5 rounded border ${
+                      item.active
+                        ? 'text-gray-200 bg-osrs-panelLight/50 border-gray-700'
+                        : 'text-gray-400 bg-osrs-dark/80 border-gray-800'
+                    }`}>
+                      {item.active ? 'Active' : 'Settled'}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs bg-osrs-dark/60 border border-osrs-gold/20 rounded-lg px-2.5 py-1.5">
+                    <span className="text-gray-400 font-mono">Prize Pool</span>
+                    <span className="text-osrs-gold font-bold font-mono">{item.prizePool}</span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 pt-1 border-t border-gray-800">
+                    <button
+                      onClick={() => handleOpenReward(item)}
+                      className="text-xs font-semibold text-gray-200 hover:text-white border border-gray-700 hover:border-osrs-gold/40 bg-[#23252b] hover:bg-[#2c2f38] px-2.5 py-1.5 rounded-lg transition-all"
+                    >
+                      View Embed
+                    </button>
+                    <button
+                      onClick={() => handleOpenReward(item)}
+                      className="text-xs font-bold text-rose-200 hover:text-white border border-rose-500/40 hover:border-rose-400 bg-rose-500/15 hover:bg-rose-500/25 px-2.5 py-1.5 rounded-lg transition-all"
+                    >
+                      Payout Actions
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </article>
+      </section>
 
       {/* Main Structural split layout with CSS Container Query */}
       <div id="main-content-layout" className="grid grid-cols-1 lg:grid-cols-12 gap-8 cq-dashboard-main">
@@ -273,20 +444,20 @@ export const Dashboard: React.FC<DashboardProps> = ({
               </button>
             </div>
           ) : (
-            <div className="bg-osrs-poison/10 border border-osrs-poison/25 rounded-2xl p-4.5 flex items-center justify-between gap-4 shadow-md">
+            <div className="bg-[#1a2032] border border-[#4a99e8]/30 rounded-2xl p-4.5 flex items-center justify-between gap-4 shadow-md">
               <div className="flex items-center gap-3.5 min-w-0">
-                <img src={discordUser.avatarUrl} className="w-10 h-10 rounded-full border border-osrs-poison/30 shrink-0" />
+                <img src={discordUser.avatarUrl} className="w-10 h-10 rounded-full border border-[#4a99e8]/35 shrink-0" />
                 <div className="min-w-0">
                   <h4 className="text-sm font-bold text-white font-sans flex items-center gap-1.5">
                     <span>Verified Clan Raider</span>
-                    <CheckCircle className="w-4 h-4 text-osrs-poison animate-pulse" />
+                    <CheckCircle className="w-4 h-4 text-[#4a99e8]" />
                   </h4>
                   <p className="text-xs text-gray-400 mt-0.5 truncate">
                     Currently synced as <span className="text-osrs-gold font-mono font-bold">@{discordUser.username}</span>. Your OSRS activity streams are verified.
                   </p>
                 </div>
               </div>
-              <span className="text-[10px] uppercase font-mono tracking-wider font-extrabold text-osrs-poison bg-osrs-poison/10 px-2.5 py-1 rounded-md border border-osrs-poison/20">
+              <span className="text-[10px] uppercase font-mono tracking-wider font-extrabold text-[#9cc5ff] bg-[#4a99e8]/10 px-2.5 py-1 rounded-md border border-[#4a99e8]/25">
                 ACTIVE
               </span>
             </div>
@@ -302,9 +473,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 <div>
                   <div className="flex items-center gap-2">
                     <h4 className="text-sm font-bold text-white font-serif">Venny Discord Bot Bridge</h4>
-                    <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center gap-1">
-                      <span className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse"></span>
-                      Synced
+                    <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-indigo-500/15 text-indigo-300 border border-indigo-500/35 flex items-center gap-1">
+                      <span className="w-1 h-1 rounded-full bg-indigo-300"></span>
+                      Connected
                     </span>
                   </div>
                   <p className="text-xs text-gray-400 mt-0.5">
@@ -479,18 +650,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
             </div>
 
           </section>
-
-          {/* Automated Discord Bot Clan Rewards & Winner Announcements Feed */}
-          <ClanRewardsFeed 
-            rewards={rewards}
-            loading={loadingState.rewards}
-            onOpenRewardModal={(rew) => {
-              if (rew) setSelectedReward(rew);
-              else if (rewards.length > 0) setSelectedReward(rewards[0]);
-              setIsRewardModalOpen(true);
-            }}
-            onOpenBotModal={onOpenBotModal}
-          />
 
           {/* SOTW / BOTW Competitions Grid - Featured Event Rankings */}
           {loadingState.syncingWom ? (

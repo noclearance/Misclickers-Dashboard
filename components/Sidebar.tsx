@@ -25,8 +25,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const menuItems: Array<{ id: View; label: string; icon: React.ElementType; badge?: string; badgeColor?: string }> = [
     { id: 'dashboard', label: 'Headquarters', icon: LayoutDashboard },
-    { id: 'leaderboard', label: 'Clan Highscores', icon: Trophy, badge: 'Live', badgeColor: 'bg-osrs-gold/15 text-osrs-gold border-osrs-gold/30' },
-    { id: 'raffles', label: 'Grand Raffles', icon: Sparkles, badge: 'Win GP', badgeColor: 'bg-osrs-poison/15 text-osrs-poison border-osrs-poison/30' },
+    { id: 'leaderboard', label: 'Clan Highscores', icon: Trophy, badge: 'Live', badgeColor: 'bg-osrs-panelLight/50 text-gray-300 border-gray-700/80' },
+    { id: 'raffles', label: 'Grand Raffles', icon: Sparkles, badge: 'Win GP', badgeColor: 'bg-osrs-panelLight/50 text-gray-300 border-gray-700/80' },
     { id: 'bingo', label: 'Active Bingo', icon: Grid },
     { id: 'prices', label: 'GE Price Checker', icon: Coins },
   ];
@@ -155,7 +155,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     </span>
                   )}
                   {isActive && (
-                    <span className="w-1.5 h-1.5 rounded-full bg-osrs-gold animate-pulse"></span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-osrs-gold"></span>
                   )}
                 </div>
               </button>
@@ -176,7 +176,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <span className="font-sans truncate font-bold">Venny Bot Bridge</span>
               </div>
               <span className="text-[9px] font-mono px-1.5 py-0.5 rounded border bg-indigo-500/20 text-indigo-300 border-indigo-500/40 flex items-center gap-1">
-                <span className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span className="w-1 h-1 rounded-full bg-indigo-300"></span>
                 REST API
               </span>
             </button>
@@ -229,7 +229,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     <div className="text-[10px] text-white font-black truncate">
                       @{discordUser.username}
                     </div>
-                    <span className="text-[8px] text-[#5865F2] font-mono block leading-none font-semibold">Verified Sync</span>
+                    <span className="text-[8px] text-[#5865F2] font-mono block leading-none font-semibold">Connected</span>
                   </div>
                 </div>
                 <button 
@@ -252,8 +252,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
             <div className="flex items-center justify-between text-[9px] text-gray-500 font-mono">
               <span>RuneLite Plugin:</span>
-              <span className="flex items-center gap-1 text-osrs-poison font-bold">
-                <span className="w-1 h-1 rounded-full bg-osrs-poison animate-ping"></span>
+              <span className="flex items-center gap-1 text-gray-300 font-bold">
+                <span className="w-1 h-1 rounded-full bg-gray-400"></span>
                 Linked
               </span>
             </div>
