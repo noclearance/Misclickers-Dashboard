@@ -39,7 +39,7 @@ export const DiscordRewardEmbedModal: React.FC<DiscordRewardEmbedModalProps> = (
   const [formThirdGp, setFormThirdGp] = useState('Guild Credits Reward');
   const [formThirdPoints, setFormThirdPoints] = useState(600);
   const [formSponsor, setFormSponsor] = useState('Clan Vault & Leadership (Inwarth)');
-  const [formChannel, setFormChannel] = useState('#clan-announcements');
+  const [formChannel, setFormChannel] = useState('#announcements');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitFeedback, setSubmitFeedback] = useState<string | null>(null);
 
@@ -62,6 +62,8 @@ export const DiscordRewardEmbedModal: React.FC<DiscordRewardEmbedModalProps> = (
     allRewards.find(r => r.id === activeRewardId) || 
     selectedReward || 
     allRewards[0];
+  const formatRewardChannel = (channel?: string) =>
+    channel === '#events' ? '#events (Bingo & events)' : (channel || '#announcements');
 
   const handleToggleReaction = (emoji: string) => {
     setUserReacted(prev => {
@@ -203,7 +205,7 @@ export const DiscordRewardEmbedModal: React.FC<DiscordRewardEmbedModalProps> = (
           <div className="flex items-center gap-2 text-gray-400 font-mono text-xs">
             <span className="text-gray-500">Channel:</span>
             <span className="text-indigo-400 font-semibold bg-[#2b2d31] px-2 py-0.5 rounded">
-              {currentReward?.discordChannel || '#clan-announcements'}
+              {formatRewardChannel(currentReward?.discordChannel)}
             </span>
           </div>
         </div>
@@ -288,7 +290,7 @@ export const DiscordRewardEmbedModal: React.FC<DiscordRewardEmbedModalProps> = (
                     <div className="flex items-center gap-2">
                       <Trophy className="w-3.5 h-3.5 text-osrs-gold" />
                       <span className="font-bold text-gray-300 uppercase tracking-wider text-[11px]">
-                        The Mislickerz • Official Event Bounty
+                        Misclickerz • Official Event Bounty
                       </span>
                     </div>
                     {currentReward?.active ? (
@@ -382,7 +384,7 @@ export const DiscordRewardEmbedModal: React.FC<DiscordRewardEmbedModalProps> = (
                   <div className="pt-2 border-t border-gray-700/40 flex items-center justify-between text-[11px] text-[#949ba4]">
                     <span className="flex items-center gap-1.5">
                       <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                      Payout backed by Misclickerss Treasury • Automated Discord Role Assignment
+                      Payout backed by Misclickerz Treasury • Automated Discord Role Assignment
                     </span>
                     <span className="font-mono">{currentReward?.eventType}</span>
                   </div>

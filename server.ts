@@ -4,9 +4,10 @@ import path from 'path';
 import { createServer as createViteServer } from 'vite';
 
 const PORT = 3000;
-const VENNY_SECRET = process.env.VENNY_API_KEY || 'venny_mislickerz_secret_key_2026';
-const WOM_GROUP_ID = Number(process.env.WOM_GROUP_ID) || 24942; // Misclickerss
+const VENNY_SECRET = process.env.VENNY_API_KEY || 'configured-secret';
+const WOM_GROUP_ID = Number(process.env.WOM_GROUP_ID) || 24942; // Misclickerz
 const WOM_API_KEY = process.env.WOM_API_KEY || process.env.WISEOLDMAN_API_KEY || '';
+const VENNY_HEALTH_URL = 'https://grazybot.onrender.com/health';
 
 // In-Memory Database State (persisted while server is up, synced with Wise Old Man & Venny bot)
 interface ServerState {
@@ -93,14 +94,14 @@ interface ServerState {
   }>;
 }
 
-// Initialized with real Wise Old Man Clan Group 24942 (Misclickerss) roster
+// Initialized with real Wise Old Man Clan Group 24942 (Misclickerz) roster
 const state: ServerState = {
   lastMisclickTime: new Date(Date.now() - 1000 * 60 * 14).toISOString(), // 14 mins ago
   totalMisclicks: 42,
   clanInfo: {
     id: 24942,
-    name: 'Misclickerss',
-    clanChat: 'Misclickerss',
+    name: 'Misclickerz',
+    clanChat: 'Misclickerz',
     homeworld: 677,
     memberCount: 25,
     description: '🧭 Founded by players who wanted a balanced mix of chill and challenge in OSRS.',
@@ -112,7 +113,7 @@ const state: ServerState = {
     version: 'v2.4.1',
     repo: 'https://github.com/noclearance/venny',
     lastPing: new Date().toISOString(),
-    connectedGuild: 'Misclickerss [CC]',
+    connectedGuild: 'Misclickerz [CC]',
     guildId: '109876543210987654',
     guildMembers: 25,
     eventsReceived: 142,
@@ -164,7 +165,7 @@ const state: ServerState = {
       rewards: {
         totalPrizePool: '21,000,000 GP + 4,200 Guild Credits',
         announcedInDiscord: true,
-        discordChannel: '#clan-announcements',
+        discordChannel: '#announcements',
         announcedAt: '2026-08-25T21:05:00Z',
         sponsor: 'Clan Treasury (Inwarth & Mag84)',
         firstPlace: {
@@ -207,7 +208,7 @@ const state: ServerState = {
       rewards: {
         totalPrizePool: '21,000,000 GP + 4,200 Guild Credits',
         announcedInDiscord: true,
-        discordChannel: '#clan-announcements',
+        discordChannel: '#announcements',
         announcedAt: '2026-08-17T12:00:00Z',
         sponsor: 'Clan Treasury (Inwarth)',
         firstPlace: {
@@ -259,7 +260,7 @@ const state: ServerState = {
         roleReward: '🥉 Rooftop Sprinter'
       },
       sponsor: 'Clan Treasury (Inwarth & Mag84)',
-      discordChannel: '#clan-announcements',
+      discordChannel: '#announcements',
       announcedBy: 'Venny Discord Bot',
       timestamp: 'Active Now',
       active: true,
@@ -291,7 +292,7 @@ const state: ServerState = {
         roleReward: '🥉 Harpoon Hero'
       },
       sponsor: 'Clan Treasury (Inwarth)',
-      discordChannel: '#clan-announcements',
+      discordChannel: '#announcements',
       announcedBy: 'Venny Discord Bot',
       timestamp: 'Settled',
       active: false,
@@ -321,7 +322,7 @@ const state: ServerState = {
         roleReward: '✨ Line Buster'
       },
       sponsor: 'Clan Leadership Council',
-      discordChannel: '#clan-bingo',
+      discordChannel: '#events',
       announcedBy: 'Venny Discord Bot',
       timestamp: 'Active Now',
       active: true,
@@ -335,7 +336,7 @@ const state: ServerState = {
       username: 'Inwarth',
       type: 'achievement',
       title: 'Current Leader - Overall SOTW',
-      detail: 'Misclickerss Competition • +11.95M XP gained in event',
+      detail: 'Misclickerz Competition • +11.95M XP gained in event',
       timestamp: 'Today',
       value: '11.95M XP',
       rarity: 'legendary'
@@ -417,6 +418,15 @@ const state: ServerState = {
 };
 
 // Helper: Format WOM roles into clean human labels
+type VennyHealthStatus = 'online' | 'degraded' | 'offline';
+interface VennyBridgeHealth {
+  status: VennyHealthStatus;
+  label: 'Online' | 'Degraded' | 'Offline';
+  detail: string;
+  checkedAt: string;
+  source: string;
+}
+
 function formatWomRole(role: string): string {
   const map: Record<string, string> = {
     owner: 'Owner',
@@ -439,11 +449,104 @@ function formatWomRole(role: string): string {
   return map[role.toLowerCase()] || role.charAt(0).toUpperCase() + role.slice(1);
 }
 
+function toHealthLabel(status: VennyHealthStatus): VennyBridgeHealth['label'] {
+  if (status === 'online') return 'Online';
+  if (status === 'degraded') return 'Degraded';
+  return 'Offline';
+}
+
+function includesAny(text: string, terms: string[]): boolean {
+  return terms.some(term => text.includes(term));
+}
+
+function formatDisplayChannel(channel: string, eventType?: string): string {
+  if (channel === '#events' || eventType === 'Bingo') {
+    return '#events (Bingo & events)';
+  }
+  return channel;
+}
+
+function classifyVennyHealth(payload: unknown, responseText: string): VennyHealthStatus {
+  const normalizedText = responseText.toLowerCase();
+  const trimmedText = normalizedText.trim();
+  const serialized = typeof payload === 'string' ? payload.toLowerCase() : JSON.stringify(payload).toLowerCase();
+  const haystack = `${normalizedText} ${serialized}`.trim();
+
+  if (includesAny(haystack, ['degraded', 'partial', 'limited', 'warning'])) {
+    return 'degraded';
+  }
+
+  if (includesAny(haystack, ['offline', 'down', 'failed', 'failure', 'unhealthy', '"ok":false', '"healthy":false'])) {
+    return 'offline';
+  }
+
+  if (
+    trimmedText === 'ok' ||
+    trimmedText === 'healthy' ||
+    trimmedText === 'venny ok' ||
+    trimmedText === 'venny healthy' ||
+    includesAny(haystack, ['venny ok', 'venny healthy', '"venny":"ok"', '"venny":"healthy"', '"venny":true', '"status":"ok"', '"healthy":true', 'healthy', ' ok '])
+  ) {
+    return 'online';
+  }
+
+  return 'degraded';
+}
+
+async function getVennyBridgeHealth(): Promise<VennyBridgeHealth> {
+  const checkedAt = new Date().toISOString();
+  try {
+    const healthRes = await fetch(VENNY_HEALTH_URL, {
+      headers: { 'Accept': 'application/json, text/plain;q=0.9, */*;q=0.8' },
+      signal: AbortSignal.timeout(5000)
+    });
+
+    if (!healthRes.ok) {
+      return {
+        status: 'offline',
+        label: 'Offline',
+        detail: `Health endpoint returned ${healthRes.status}.`,
+        checkedAt,
+        source: VENNY_HEALTH_URL
+      };
+    }
+
+    const responseText = await healthRes.text();
+    let payload: unknown = responseText;
+    try {
+      payload = JSON.parse(responseText);
+    } catch {
+      // Plain text responses are acceptable.
+    }
+
+    const status = classifyVennyHealth(payload, responseText);
+    return {
+      status,
+      label: toHealthLabel(status),
+      detail: status === 'online'
+        ? 'Venny health endpoint reports healthy status.'
+        : status === 'degraded'
+        ? 'Health endpoint is reachable but reports partial/degraded status.'
+        : 'Health endpoint is reachable but reports unhealthy/offline status.',
+      checkedAt,
+      source: VENNY_HEALTH_URL
+    };
+  } catch (error: any) {
+    return {
+      status: 'offline',
+      label: 'Offline',
+      detail: `Health endpoint unreachable: ${error?.message || 'request failed'}`,
+      checkedAt,
+      source: VENNY_HEALTH_URL
+    };
+  }
+}
+
 // Function to pull live data from Wise Old Man Group
 async function syncWiseOldManData() {
   try {
     const headers: Record<string, string> = { 
-      'User-Agent': 'TheMislickerz-App/1.0 (Clan Dashboard)' 
+      'User-Agent': 'Misclickerz-App/1.0 (Clan Dashboard)' 
     };
     if (WOM_API_KEY) {
       headers['x-api-key'] = WOM_API_KEY;
@@ -455,8 +558,8 @@ async function syncWiseOldManData() {
       const groupData: any = await groupRes.json();
       state.clanInfo = {
         id: groupData.id || WOM_GROUP_ID,
-        name: groupData.name || 'Misclickerss',
-        clanChat: groupData.clanChat || 'Misclickerss',
+        name: groupData.name || 'Misclickerz',
+        clanChat: groupData.clanChat || 'Misclickerz',
         homeworld: groupData.homeworld || 677,
         memberCount: groupData.memberships?.length || groupData.memberCount || 25,
         description: groupData.description || '🧭 Founded by players who wanted a balanced mix of chill and challenge in OSRS.',
@@ -510,7 +613,7 @@ async function syncWiseOldManData() {
               const defaultRewards = {
                 totalPrizePool: '21,000,000 GP + 4,200 Guild Credits',
                 announcedInDiscord: true,
-                discordChannel: '#clan-announcements',
+                discordChannel: '#announcements',
                 announcedAt: detail.startsAt || new Date().toISOString(),
                 sponsor: isBoss ? 'Clan Vault (Mag84 & Inwarth)' : 'Clan Treasury (Inwarth)',
                 firstPlace: {
@@ -605,7 +708,7 @@ async function syncWiseOldManData() {
                 username: playerName,
                 type: ehbGained > 2 ? ('drop' as const) : ('level' as const),
                 title: ehbGained > 2 ? `Bossing Sprint Gained ${displayVal}` : `Weekly Gain: ${displayVal} XP`,
-                detail: `Synced from Wise Old Man Weekly Ledger • Misclickerss`,
+                detail: `Synced from Wise Old Man Weekly Ledger • Misclickerz`,
                 timestamp: 'This week',
                 value: displayVal,
                 rarity: (xpGained > 5000000 || ehbGained > 10 ? 'legendary' : 'rare') as 'legendary' | 'rare'
@@ -678,18 +781,31 @@ async function startServer() {
   // -------------------------------------------------------------
 
   // 1. Health check
-  app.get('/api/health', (req, res) => {
-    res.json({ status: 'ok', time: new Date().toISOString(), clan: 'The Mislickerz' });
+  app.get('/api/health', async (req, res) => {
+    const vennyHealth = await getVennyBridgeHealth();
+    const status = vennyHealth.status === 'online' ? 'ok' : vennyHealth.status === 'degraded' ? 'degraded' : 'offline';
+    res.json({
+      status,
+      time: new Date().toISOString(),
+      clan: 'Misclickerz',
+      venny: vennyHealth
+    });
   });
 
   // 2. Venny Bot Bridge Status & Configuration
-  app.get('/api/bot/status', (req, res) => {
+  app.get('/api/bot/status', async (req, res) => {
     const host = req.get('host') || `localhost:${PORT}`;
     const protocol = req.protocol === 'https' || req.get('x-forwarded-proto') === 'https' ? 'https' : 'http';
     const baseUrl = `${protocol}://${host}`;
+    const vennyHealth = await getVennyBridgeHealth();
 
     res.json({
-      status: 'connected',
+      status: vennyHealth.status === 'offline' ? 'idle' : 'connected',
+      bridgeStatus: vennyHealth.status,
+      bridgeStatusLabel: vennyHealth.label,
+      bridgeStatusDetail: vennyHealth.detail,
+      bridgeCheckedAt: vennyHealth.checkedAt,
+      bridgeHealthSource: vennyHealth.source,
       botName: state.botStatus.name,
       version: state.botStatus.version,
       repo: state.botStatus.repo,
@@ -713,9 +829,10 @@ async function startServer() {
       integrationSnippets: {
         python: `# Add to your Venny Discord bot (cogs/sync.py)
 import aiohttp
+import os
 
 WEB_HUB_URL = "${baseUrl}/api/bot/webhook"
-SECRET_KEY = "${VENNY_SECRET}"
+SECRET_KEY = os.getenv("VENNY_API_KEY", "configured-secret")
 
 async def send_web_event(event_type: str, data: dict):
     headers = {"X-Venny-Secret": SECRET_KEY, "Content-Type": "application/json"}
@@ -735,7 +852,7 @@ async function syncMisclick(username, detail) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-Venny-Secret': '${VENNY_SECRET}'
+      'X-Venny-Secret': process.env.VENNY_API_KEY || 'configured-secret'
     },
     body: JSON.stringify({ username, detail })
   });
@@ -824,7 +941,7 @@ async function syncMisclick(username, detail) {
         secondPlace: data.secondPlace || { gp: '15,000,000 GP', points: 750, roleReward: '🥈 Runner-Up', title: '2nd Place' },
         thirdPlace: data.thirdPlace || { gp: '5,000,000 GP', points: 250, roleReward: '🥉 Contender', title: '3rd Place' },
         sponsor: data.sponsor || username || 'Clan Treasury',
-        discordChannel: data.discordChannel || '#clan-announcements',
+        discordChannel: data.discordChannel || '#announcements',
         announcedBy: 'Venny Discord Bot',
         timestamp: 'Just now',
         active: true,
@@ -854,7 +971,7 @@ async function syncMisclick(username, detail) {
         username: 'Venny Bot',
         type: 'achievement' as const,
         title: `📢 Reward Announced: ${newReward.competitionTitle}`,
-        detail: `Prize Pool: ${newReward.prizePool} • Broadcast in ${newReward.discordChannel}`,
+        detail: `Prize Pool: ${newReward.prizePool} • Broadcast in ${formatDisplayChannel(newReward.discordChannel, newReward.eventType)}`,
         timestamp: 'Just now',
         rarity: 'legendary' as const
       };
@@ -1057,7 +1174,7 @@ async function syncMisclick(username, detail) {
       secondPlace, 
       thirdPlace, 
       sponsor = 'Clan Treasury', 
-      discordChannel = '#clan-announcements',
+      discordChannel = '#announcements',
       competitionId,
       discordEmbedColor = '#f59e0b'
     } = req.body;
@@ -1104,7 +1221,7 @@ async function syncMisclick(username, detail) {
       username: 'Venny Bot',
       type: 'achievement' as const,
       title: `📢 New Event Bounty Announced!`,
-      detail: `${newReward.competitionTitle} • Prize: ${newReward.prizePool} in ${newReward.discordChannel}`,
+      detail: `${newReward.competitionTitle} • Prize: ${newReward.prizePool} in ${formatDisplayChannel(newReward.discordChannel, newReward.eventType)}`,
       timestamp: 'Just now',
       rarity: 'legendary' as const
     };
@@ -1156,8 +1273,8 @@ async function syncMisclick(username, detail) {
   }
 
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`[The Mislickerz Bot Hub] Server running on http://0.0.0.0:${PORT}`);
-    console.log(`[Venny Bot Sync] Secret: ${VENNY_SECRET}`);
+    console.log(`[Misclickerz Bot Hub] Server running on http://0.0.0.0:${PORT}`);
+    console.log(`[Venny Bot Sync] Secret configured: ${Boolean(VENNY_SECRET)}`);
     
     // Background sync with Wise Old Man Group 24942
     syncWiseOldManData();

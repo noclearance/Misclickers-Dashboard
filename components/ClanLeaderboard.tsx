@@ -249,7 +249,7 @@ export const ClanLeaderboard: React.FC = () => {
   });
 
   const getCustomRankTitle = (pts: number) => {
-    if (pts >= 11000) return 'Grandmaster Mislicker';
+    if (pts >= 11000) return 'Grandmaster Misclicker';
     if (pts >= 9000) return 'Expert Tile Clipper';
     if (pts >= 7000) return 'Brew Chugging Hero';
     if (pts >= 5000) return 'Slayer Choke Rookie';
@@ -285,7 +285,7 @@ export const ClanLeaderboard: React.FC = () => {
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <h3 className="font-serif font-black text-lg tracking-wider text-gray-150 uppercase">
-                {clanInfo?.name || 'Misclickerss'} Highscores
+                {clanInfo?.name || 'Misclickerz'} Highscores
               </h3>
               <a
                 href={`https://wiseoldman.net/groups/${REAL_WOM_GROUP_ID}`}

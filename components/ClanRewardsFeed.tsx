@@ -119,6 +119,8 @@ export const ClanRewardsFeed: React.FC<ClanRewardsFeedProps> = ({
     }
     return true;
   });
+  const formatRewardChannel = (channel?: string) =>
+    channel === '#events' ? '#events (Bingo & events)' : (channel || '#announcements');
 
   // Calculate statistics for filter counters
   const sotwCount = announcements.filter(
@@ -302,7 +304,7 @@ export const ClanRewardsFeed: React.FC<ClanRewardsFeedProps> = ({
                     </span>
                     <span className="text-[11px] text-[#8ea1e1] font-mono flex items-center gap-0.5">
                       <MessageSquare className="w-3 h-3" />
-                      {item.discordChannel || '#clan-announcements'}
+                      {formatRewardChannel(item.discordChannel)}
                     </span>
                     <span className="text-gray-500 text-xs">•</span>
                     <span className="text-[11px] text-gray-400 flex items-center gap-1 font-mono">

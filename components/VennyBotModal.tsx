@@ -84,7 +84,7 @@ export const VennyBotModal: React.FC<VennyBotModalProps> = ({ isOpen, onClose, o
           secondPlace: { gp: 'Guild Credits Reward', points: 1200, roleReward: '🥈 Master Angler', title: '2nd Place' },
           thirdPlace: { gp: 'Guild Credits Reward', points: 600, roleReward: '🥉 Harpoon Hero', title: '3rd Place' },
           sponsor: 'Clan Vault & Leadership (Inwarth)',
-          discordChannel: '#clan-announcements'
+          discordChannel: '#announcements'
         }, 'Venny Discord Bot');
         setTestResult(`Success! Live reward announcement broadcast dispatched to dashboard.`);
       }
@@ -101,7 +101,27 @@ export const VennyBotModal: React.FC<VennyBotModalProps> = ({ isOpen, onClose, o
   const hostUrl = typeof window !== 'undefined' ? window.location.origin : 'https://ais-dev-...';
   const webhookUrl = `${hostUrl}/api/bot/webhook`;
   const misclickUrl = `${hostUrl}/api/bot/misclick`;
-  const dropUrl = `${hostUrl}/api/bot/drop`;
+  const bridgeStatus = botData?.bridgeStatus || 'offline';
+  const bridgeStatusLabel = botData?.bridgeStatusLabel || 'Offline';
+  const bridgeStatusDetail = botData?.bridgeStatusDetail || 'Health probe unavailable.';
+  const statusBadgeClass =
+    bridgeStatus === 'online'
+      ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'
+      : bridgeStatus === 'degraded'
+      ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+      : 'bg-rose-500/20 text-rose-300 border-rose-500/40';
+  const statusDotClass =
+    bridgeStatus === 'online'
+      ? 'bg-emerald-400'
+      : bridgeStatus === 'degraded'
+      ? 'bg-amber-400'
+      : 'bg-rose-400';
+  const statusTextClass =
+    bridgeStatus === 'online'
+      ? 'text-emerald-400'
+      : bridgeStatus === 'degraded'
+      ? 'text-amber-300'
+      : 'text-rose-300';
 
   return (
     <div id="venny-bot-modal-overlay" className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fade-in">
@@ -120,9 +140,9 @@ export const VennyBotModal: React.FC<VennyBotModalProps> = ({ isOpen, onClose, o
                 <h3 className="font-serif font-bold text-base text-osrs-gold tracking-wide">
                   Venny Bot Backend Bridge
                 </h3>
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                  REST API Active
+                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${statusBadgeClass}`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${statusDotClass} animate-pulse`}></span>
+                  {bridgeStatusLabel}
                 </span>
               </div>
               <p className="text-xs text-gray-400 flex items-center gap-1.5">
@@ -151,7 +171,7 @@ export const VennyBotModal: React.FC<VennyBotModalProps> = ({ isOpen, onClose, o
           <div className="flex items-center gap-4">
             <div>
               <span className="text-gray-400">Connected Clan: </span>
-              <span className="text-white font-semibold">The Mislickerz [CC]</span>
+              <span className="text-white font-semibold">Misclickerz [CC]</span>
             </div>
             <div className="hidden sm:block text-gray-600">•</div>
             <div>
@@ -160,9 +180,14 @@ export const VennyBotModal: React.FC<VennyBotModalProps> = ({ isOpen, onClose, o
             </div>
           </div>
           <div className="flex items-center gap-2 font-mono text-[11px] text-gray-400">
-            <Radio className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
-            <span>Port 3000 Ingress Ready</span>
+            <Radio className={`w-3.5 h-3.5 ${statusTextClass} animate-pulse`} />
+            <span>
+              Venny Health: <span className={`font-bold ${statusTextClass}`}>{bridgeStatusLabel}</span>
+            </span>
           </div>
+        </div>
+        <div className="bg-[#141517] px-6 py-2 border-b border-gray-800 text-[11px] font-mono text-gray-400">
+          {bridgeStatusDetail}
         </div>
 
         {/* Navigation Tabs */}
@@ -221,7 +246,7 @@ export const VennyBotModal: React.FC<VennyBotModalProps> = ({ isOpen, onClose, o
                 <div className="text-xs space-y-1">
                   <h4 className="font-bold text-white">Bot Authentication Header</h4>
                   <p className="text-gray-300 leading-relaxed">
-                    Pass the shared secret in the header <code className="bg-black/40 px-1.5 py-0.5 rounded text-osrs-gold font-mono">X-Venny-Secret: venny_mislickerz_secret_key_2026</code> on all POST requests.
+                    Pass the shared secret in the header <code className="bg-black/40 px-1.5 py-0.5 rounded text-osrs-gold font-mono">X-Venny-Secret: •••• (configured)</code> on all POST requests.
                   </p>
                 </div>
               </div>
@@ -455,7 +480,7 @@ export const VennyBotModal: React.FC<VennyBotModalProps> = ({ isOpen, onClose, o
         {/* Footer */}
         <div className="bg-[#141517] px-6 py-3.5 border-t border-gray-800 flex items-center justify-between">
           <span className="text-[11px] text-gray-500 font-mono">
-            Mislickerz Bot Hub v2.4 • Sync Protocol 2026
+            Misclickerz Bot Hub v2.4 • Sync Protocol 2026
           </span>
           <button
             onClick={onClose}
@@ -471,11 +496,12 @@ export const VennyBotModal: React.FC<VennyBotModalProps> = ({ isOpen, onClose, o
 
 const pythonSnippet = (webhookUrl: string) => `# Venny Discord Bot Extension (cogs/web_sync.py)
 import aiohttp
+import os
 import discord
 from discord.ext import commands
 
 WEB_HUB_URL = "${webhookUrl}"
-BOT_SECRET = "venny_mislickerz_secret_key_2026"
+BOT_SECRET = os.getenv("VENNY_API_KEY", "configured-secret")
 
 class WebSync(commands.Cog):
     def __init__(self, bot):
@@ -502,7 +528,7 @@ class WebSync(commands.Cog):
     async def misclick_cmd(self, ctx, *, reason: str = "Unspecified misclick"):
         """Logs a misclick and resets the live web ticker clock!"""
         await self.push_event("misclick", ctx.author.display_name, {"detail": reason})
-        await ctx.send(f"⚠️ {ctx.author.mention} reset The Mislickerz ticker! Reason: {reason}")
+        await ctx.send(f"⚠️ {ctx.author.mention} reset Misclickerz ticker! Reason: {reason}")
 
     @commands.command(name="announce_reward")
     async def announce_reward_cmd(self, ctx, title: str, prize_pool: str = "75M GP"):
@@ -527,7 +553,7 @@ class WebSync(commands.Cog):
         embed.add_field(name="🥇 1st Place", value="45M GP + 👑 Champion Role", inline=True)
         embed.add_field(name="🥈 2nd Place", value="20M GP", inline=True)
         embed.add_field(name="🥉 3rd Place", value="10M GP", inline=True)
-        embed.set_footer(text="Synced live to Mislickerz Web Dashboard")
+        embed.set_footer(text="Synced live to Misclickerz Web Dashboard")
         await ctx.send(embed=embed)
 
 async def setup(bot):
@@ -538,7 +564,7 @@ const nodeSnippet = (webhookUrl: string) => `// discord.js webhook broadcaster
 const fetch = require('node-fetch');
 
 const WEB_HUB_URL = '${webhookUrl}';
-const BOT_SECRET = 'venny_mislickerz_secret_key_2026';
+const BOT_SECRET = process.env.VENNY_API_KEY || 'configured-secret';
 
 async function dispatchVennyEvent(eventType, username, data) {
   try {

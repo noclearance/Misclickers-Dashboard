@@ -113,7 +113,7 @@ const AppContent: React.FC = () => {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
         <Header 
-          clanName="The Mislickerz" 
+          clanName="Misclickerz" 
           discordUser={discordUser}
           onConnectClick={() => setIsDiscordModalOpen(true)}
           onDisconnect={handleDisconnect}
