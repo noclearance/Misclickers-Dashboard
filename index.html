@@ -1,0 +1,70 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>The Mislickerz - OSRS Clan Dashboard & Bot Hub</title>
+    <meta name="description" content="Live web hub and Discord/RuneLite bot bridge for The Mislickerz OSRS clan, featuring highscores, raffles, bingo boards, live misclick tracking, and REST API sync for the Venny bot." />
+    <meta property="og:title" content="The Mislickerz - OSRS Clan Dashboard & Bot Hub" />
+    <meta property="og:description" content="Live web hub and Discord/RuneLite bot bridge for The Mislickerz OSRS clan, featuring highscores, raffles, bingo boards, live misclick tracking, and REST API sync for the Venny bot." />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" crossorigin="anonymous">
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              display: ['Space Grotesk', 'sans-serif'],
+              serif: ['Cinzel', 'serif'],
+              mono: ['JetBrains Mono', 'monospace'],
+            },
+            colors: {
+              osrs: {
+                dark: '#0a0b10',      /* Sleek deep obsidian midnight */
+                panel: '#121420',     /* Medieval-cyber slate container */
+                panelLight: '#1b1f32',/* Polished dark runic charcoal-blue */
+                gold: '#e1b033',      /* Antique metallic gold */
+                goldHover: '#ffdf80', /* Brilliant active runic gold */
+                crimson: '#e84545',   /* Vibrant dragon-scimmy red */
+                poison: '#00fa9a',    /* Emerald toxic green glow */
+                rune: '#4a99e8',      /* High-tier magical rune blue */
+                magic: '#d254ff',     /* Spell purple */
+                bronze: '#a07855',    /* Smooth polished bronze */
+              }
+            },
+            boxShadow: {
+              'glow-gold': '0 0 15px rgba(225, 176, 51, 0.2)',
+              'glow-crimson': '0 0 15px rgba(194, 45, 45, 0.25)',
+              'glow-poison': '0 0 15px rgba(30, 187, 62, 0.25)',
+              'glow-rune': '0 0 15px rgba(74, 153, 232, 0.25)',
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: #07080c;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/",
+    "react": "https://aistudiocdn.com/react@^19.1.1",
+    "react/": "https://aistudiocdn.com/react@^19.1.1/"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body class="bg-osrs-dark text-gray-100">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>

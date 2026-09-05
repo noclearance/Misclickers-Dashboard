@@ -1,0 +1,193 @@
+/* index.css */
+
+/* Custom smooth dark scrollbar for OSRS theme */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #07080c;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #252836;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #eab308;
+}
+
+/* Keyframes for elegant loading and item triggers */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* RuneScape Text Shadow styling */
+.osrs-shadow {
+  text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.9);
+}
+
+/* Subtle amber pulsing border for highlighted states */
+@keyframes amberGlow {
+  0%, 100% {
+    border-color: rgba(234, 179, 8, 0.2);
+    box-shadow: 0 0 10px rgba(234, 179, 8, 0.05);
+  }
+  50% {
+    border-color: rgba(234, 179, 8, 0.5);
+    box-shadow: 0 0 20px rgba(234, 179, 8, 0.15);
+  }
+}
+
+.animate-amber-glow {
+  animation: amberGlow 3s infinite ease-in-out;
+}
+
+/* Critical misclick alert pulse */
+@keyframes crimsonGlow {
+  0%, 100% {
+    border-color: rgba(239, 68, 68, 0.15);
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.05);
+  }
+  50% {
+    border-color: rgba(239, 68, 68, 0.4);
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.15);
+  }
+}
+
+.animate-crimson-glow {
+  animation: crimsonGlow 2.5s infinite ease-in-out;
+}
+
+/* Classic RPG double-line stone/gold border style */
+.osrs-border {
+  border: 3px double #e1b033;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8), 0 4px 10px rgba(0, 0, 0, 0.6);
+}
+
+.osrs-border-subtle {
+  border: 1px solid rgba(225, 176, 51, 0.15);
+  background: linear-gradient(135deg, #1a1613 0%, #120f0d 100%);
+}
+
+.osrs-border-highlight {
+  border: 1px solid rgba(225, 176, 51, 0.4);
+  background: linear-gradient(135deg, #26201b 0%, #1a1613 100%);
+  box-shadow: 0 0 12px rgba(225, 176, 51, 0.08);
+}
+
+/* Drop rarity glows */
+.glow-legendary {
+  box-shadow: 0 0 15px rgba(140, 75, 212, 0.4);
+  border-color: rgba(140, 75, 212, 0.6);
+}
+
+.glow-rare {
+  box-shadow: 0 0 15px rgba(225, 176, 51, 0.3);
+  border-color: rgba(225, 176, 51, 0.5);
+}
+
+@keyframes spinSlow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin-slow {
+  animation: spinSlow 12s linear infinite;
+}
+
+@keyframes skeletonShimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(37, 40, 54, 0.4) 0%,
+    rgba(234, 179, 8, 0.08) 50%,
+    rgba(37, 40, 54, 0.4) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeletonShimmer 2s infinite ease-in-out;
+}
+
+/* Unison Shimmer Transition utilities */
+.shimmer-unison-enter {
+  opacity: 0;
+  transform: translateY(3px);
+}
+
+.shimmer-unison-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 300ms cubic-bezier(0.16, 1, 0.3, 1), transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.shimmer-unison-sync {
+  transition: all 300ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* CSS Container Query definitions for modular responsive components */
+@layer utilities {
+  .cq-dashboard-main {
+    container-type: inline-size;
+    container-name: dashboard-main;
+  }
+  .cq-feed-container {
+    container-type: inline-size;
+    container-name: feed-card;
+  }
+  .cq-rewards-container {
+    container-type: inline-size;
+    container-name: rewards-card;
+  }
+  .cq-bingo-container {
+    container-type: inline-size;
+    container-name: bingo-card;
+  }
+}
+
+@container dashboard-main (max-width: 900px) {
+  .cq-responsive-stack {
+    grid-template-columns: 1fr !important;
+  }
+  .cq-podium-stack {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@container rewards-card (max-width: 640px) {
+  .cq-reward-podium {
+    grid-template-columns: 1fr !important;
+  }
+  .cq-reward-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+}
+
+@container feed-card (max-width: 640px) {
+  .cq-feed-tabs {
+    overflow-x: auto;
+    width: 100%;
+  }
+}
+
