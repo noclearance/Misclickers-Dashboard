@@ -60,13 +60,13 @@ const AppContent: React.FC = () => {
         );
       case 'leaderboard':
         return (
-          <div className="space-y-6 animate-fadeIn">
+          <div className="space-y-6">
             <ClanLeaderboard />
           </div>
         );
       case 'raffles':
         return (
-          <div className="space-y-6 animate-fadeIn">
+          <div className="space-y-6">
             <RaffleComponent 
               discordUser={discordUser} 
               onConnectClick={() => setIsDiscordModalOpen(true)} 
@@ -75,13 +75,13 @@ const AppContent: React.FC = () => {
         );
       case 'bingo':
         return (
-          <div className="animate-fadeIn">
+          <div>
             <BingoBoard />
           </div>
         );
       case 'prices':
         return (
-          <div className="animate-fadeIn">
+          <div>
             <PriceChecker />
           </div>
         );
@@ -153,7 +153,9 @@ const AppContent: React.FC = () => {
         )}
         
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-osrs-dark p-3.5 sm:p-6 lg:p-8 custom-scrollbar">
-          {renderContent()}
+          <div key={currentView} className="motion-module-enter">
+            {renderContent()}
+          </div>
         </main>
       </div>
 

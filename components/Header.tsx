@@ -90,11 +90,12 @@ export const Header: React.FC<HeaderProps> = ({
           {onOpenBotModal && (
             <button
               onClick={onOpenBotModal}
-              className="hidden md:flex items-center gap-1.5 bg-gradient-to-r from-indigo-900/35 to-purple-900/30 border border-indigo-500/30 hover:border-indigo-400 text-indigo-300 hover:text-white px-2.5 sm:px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all shadow-md active:scale-95"
+              className="hidden md:flex venny-chrome items-center gap-1.5 border hover:border-osrs-magic/70 hover:text-white px-2.5 sm:px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all shadow-md active:scale-95"
               title="View Venny Discord Bot sync status, API endpoints, and webhook tester"
             >
-              <Bot className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+              <Bot className="w-3.5 h-3.5 text-osrs-magic shrink-0" />
               <span className="font-mono text-[11px] hidden md:inline">Venny Bot</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-osrs-rune"></span>
             </button>
           )}
 
@@ -113,7 +114,6 @@ export const Header: React.FC<HeaderProps> = ({
               </span>
             </div>
           </div>
-
           <div id="header-discord-identity">
             {discordUser ? (
               <div className="flex items-center gap-2 bg-[#5865F2]/10 border border-[#5865F2]/30 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs transition-all hover:bg-[#5865F2]/15">

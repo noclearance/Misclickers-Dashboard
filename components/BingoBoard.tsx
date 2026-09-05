@@ -130,7 +130,7 @@ export const BingoBoard: React.FC = () => {
   });
 
   return (
-    <div id="bingo-view" className="space-y-8 max-w-6xl mx-auto animate-fade-in cq-bingo-container">
+    <div id="bingo-view" className="space-y-8 max-w-6xl mx-auto motion-module-enter cq-bingo-container">
       
       {/* Toast Alert Hub */}
       {notifications.length > 0 && (
@@ -164,8 +164,8 @@ export const BingoBoard: React.FC = () => {
               <Flame className="w-4 h-4 text-osrs-gold animate-pulse" />
               <span>Misclickerz Summer Campaign</span>
             </span>
-            <span className="flex items-center gap-1 text-[9px] font-mono font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/25 px-2 py-0.5 rounded-full">
-              <Bot className="w-3 h-3 text-indigo-400" />
+            <span className="venny-chrome-subtle flex items-center gap-1 text-[9px] font-mono font-bold px-2 py-0.5 rounded-full border">
+              <Bot className="w-3 h-3 text-osrs-magic" />
               <span>Venny Bot Synced</span>
             </span>
           </div>
@@ -176,7 +176,7 @@ export const BingoBoard: React.FC = () => {
         </div>
 
         {/* Progress bar */}
-        <div id="bingo-progress" className="w-full md:w-72 bg-osrs-dark border border-osrs-gold/10 p-4 rounded-xl space-y-2.5 z-10 shrink-0">
+        <div id="bingo-progress" className="surface-nested-contrast w-full md:w-72 p-4 rounded-xl space-y-2.5 z-10 shrink-0">
           <div className="flex justify-between text-[11px] font-mono">
             <span className="text-gray-400">Total Completed:</span>
             <span className="text-osrs-gold font-extrabold">{completedCount} / {boardTiles.length} Tiles</span>
@@ -236,19 +236,19 @@ export const BingoBoard: React.FC = () => {
               id={`bingo-tile-button-${tile.id}`}
               onClick={() => setSelectedTile(tile)}
               key={tile.id}
-              className={`relative min-h-32 flex flex-col justify-between p-4 rounded-2xl border text-left transition-all duration-200 group outline-none overflow-hidden ${
+              className={`bingo-tile relative min-h-32 flex flex-col justify-between p-4 rounded-2xl border text-left group outline-none overflow-hidden ${
                 tile.hide 
                   ? 'opacity-20 pointer-events-none scale-95' 
-                  : 'hover:-translate-y-1 hover:scale-[1.01]'
+                  : ''
               } ${
                 isCompleted
-                  ? 'bg-osrs-poison/10 border-osrs-poison/40 shadow-glow-poison hover:bg-osrs-poison/15'
-                  : 'bg-osrs-panel border-osrs-gold/10 hover:border-osrs-gold/30 hover:bg-osrs-panelLight/45'
+                  ? 'bingo-tile-complete shadow-glow-poison'
+                  : 'surface-nested-contrast'
               }`}
             >
               {/* Completed background stamp logo */}
               {isCompleted && (
-                <CheckCircle2 className="w-16 h-16 text-osrs-poison/10 absolute -bottom-2 -right-2 pointer-events-none" />
+                <CheckCircle2 className="bingo-check-pop w-16 h-16 text-osrs-poison/10 absolute -bottom-2 -right-2 pointer-events-none" />
               )}
 
               {/* Top Tile Info Row */}
@@ -256,13 +256,13 @@ export const BingoBoard: React.FC = () => {
                 <span className={`text-[9px] font-mono uppercase font-bold px-1.5 py-0.5 rounded border ${
                   isCompleted 
                     ? 'bg-osrs-poison/15 text-osrs-poison border-osrs-poison/25' 
-                    : 'bg-osrs-gold/10 text-osrs-gold border-osrs-gold/20'
+                    : 'bg-osrs-rune/10 text-osrs-rune border-osrs-rune/20'
                 }`}>
                   TILE {String(tile.id).padStart(2, '0')}
                 </span>
                 {isCompleted && (
                   <span className="flex items-center gap-1 text-[9px] font-mono text-osrs-poison font-bold bg-osrs-poison/20 px-1.5 py-0.5 rounded border border-osrs-poison/30">
-                    <span className="w-1.5 h-1.5 rounded-full bg-osrs-poison animate-ping"></span>
+                    <CheckCircle2 className="w-3 h-3 bingo-check-pop" />
                     CLAIMED
                   </span>
                 )}
@@ -283,7 +283,7 @@ export const BingoBoard: React.FC = () => {
                     <span>{tile.completedBy}</span>
                   </span>
                 ) : (
-                  <span className="text-[9px] font-mono text-gray-500 group-hover:text-osrs-gold transition-colors">
+                  <span className="text-[10px] font-mono text-gray-300 group-hover:text-osrs-gold transition-colors">
                     Click to inspect / verify
                   </span>
                 )}
@@ -322,7 +322,7 @@ export const BingoBoard: React.FC = () => {
             <div className="p-6 space-y-6">
               
               {/* Detailed specification display */}
-              <div className="bg-osrs-dark border border-gray-850 p-4 rounded-xl space-y-2">
+              <div className="surface-nested-contrast p-4 rounded-xl space-y-2">
                 <span className="text-[9px] text-gray-500 font-mono font-bold tracking-wider uppercase block">Objective</span>
                 <p className="text-gray-200 text-xs font-semibold leading-relaxed font-sans">{selectedTile.task}</p>
               </div>

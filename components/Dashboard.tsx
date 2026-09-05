@@ -148,7 +148,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
       : 'bg-rose-500/20 text-rose-300 border-rose-500/40';
 
   return (
-    <div id="dashboard-view" className="space-y-8 max-w-7xl mx-auto animate-fade-in">
+    <div id="dashboard-view" className="space-y-8 max-w-7xl mx-auto motion-module-enter">
       
       {/* Toast Alert Hub */}
       {notifications.length > 0 && (
@@ -211,9 +211,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
             <span className="text-base sm:text-lg font-serif font-bold text-osrs-gold mt-1 text-center truncate max-w-[220px]">
               {activeCompTitle}
             </span>
-            <div className="flex items-center gap-1.5 text-[10px] font-mono text-gray-300 mt-2 bg-osrs-dark/70 px-2 py-0.5 rounded-md border border-gray-700/70">
-              <span className="w-1.5 h-1.5 rounded-full bg-osrs-gold"></span>
-              Live standings snapshot
+            <div className="flex items-center gap-1.5 text-[10px] font-mono theme-link-info mt-2 bg-osrs-rune/10 px-2 py-0.5 rounded-md border border-osrs-rune/20">
+              <span className="w-1.5 h-1.5 rounded-full bg-osrs-rune"></span>
+              Wise Old Man Synced
             </div>
           </div>
 
@@ -501,7 +501,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 <div>
                   <div className="flex items-center gap-2">
                     <h4 className="text-sm font-bold text-white font-serif">Venny Discord Bot Bridge</h4>
-                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-mono font-bold border flex items-center gap-1 ${bridgeStatusBadgeClass}`}>
+                    <span className={`venny-chrome-subtle px-2 py-0.5 rounded-full text-[9px] font-mono font-bold border flex items-center gap-1 ${bridgeStatusBadgeClass}`}>
                       <span className="w-1 h-1 rounded-full bg-current animate-pulse"></span>
                       {bridgeStatusLabel}
                     </span>
@@ -977,9 +977,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
                       <h3 className="font-serif font-black text-base tracking-wider text-gray-100 uppercase">
                         SUMMER CLAN BINGO 2026
                       </h3>
-                      <span className="text-[9px] font-mono font-bold uppercase bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
-                        <span>Venny Bot Live</span>
+                      <span className="text-[9px] font-mono font-bold uppercase bg-osrs-rune/15 text-osrs-rune border border-osrs-rune/30 px-2 py-0.5 rounded-full flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-osrs-rune"></span>
+                        <span>Venny Bot Synced</span>
                       </span>
                     </div>
                     <p className="text-[11px] text-gray-400 font-mono mt-0.5">

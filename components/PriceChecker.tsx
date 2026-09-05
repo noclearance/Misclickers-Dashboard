@@ -93,7 +93,7 @@ export const PriceChecker: React.FC = () => {
   }, '');
 
   return (
-    <div id="price-checker-view" className="space-y-6 max-w-5xl mx-auto animate-fade-in">
+    <div id="price-checker-view" className="space-y-6 max-w-5xl mx-auto motion-module-enter">
       
       {/* GE Badge Header */}
       <section id="ge-badge" className="bg-osrs-panel border border-osrs-gold/15 p-5 rounded-2xl flex items-center justify-between shadow-glow-gold relative overflow-hidden">
@@ -138,7 +138,7 @@ export const PriceChecker: React.FC = () => {
                 id="submit-ge-query"
                 type="submit"
                 disabled={searching}
-                className="w-full bg-osrs-gold hover:bg-osrs-goldHover disabled:bg-gray-800 text-osrs-dark font-sans text-xs uppercase font-extrabold py-3 rounded-xl transition-all shadow-md flex items-center justify-center gap-2"
+                className="w-full bg-osrs-rune hover:bg-blue-400 disabled:bg-gray-800 text-white font-sans text-xs uppercase font-extrabold py-3 rounded-xl transition-all shadow-md flex items-center justify-center gap-2"
               >
                 {searching ? 'QUERIES IN PROGRESS...' : 'EXECUTE INDEX SEARCH'}
               </button>
@@ -160,7 +160,7 @@ export const PriceChecker: React.FC = () => {
                     id={`recommendation-${i}`}
                     key={rec.term}
                     onClick={() => { setSearchTerm(rec.name); queryPrice(rec.term); }}
-                    className="w-full text-left bg-osrs-dark/60 hover:bg-osrs-gold/5 border border-osrs-gold/5 hover:border-osrs-gold/20 text-xs text-gray-450 hover:text-osrs-gold px-3 py-2.5 rounded-xl transition-all font-mono flex items-center justify-between"
+                    className="w-full text-left bg-osrs-dark/60 hover:bg-osrs-rune/10 border border-osrs-rune/10 hover:border-osrs-rune/25 text-xs text-gray-450 hover:text-osrs-rune px-3 py-2.5 rounded-xl transition-all font-mono flex items-center justify-between"
                   >
                     <span>{rec.name}</span>
                     <span className="text-[10px] text-gray-500 font-mono">»</span>
