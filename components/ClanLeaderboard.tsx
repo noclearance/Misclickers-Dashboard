@@ -274,7 +274,7 @@ export const ClanLeaderboard: React.FC = () => {
   const activeMetricIcon = METRICS.find(m => m.id === selectedMetric)?.icon || '🏆';
 
   return (
-    <div className="bg-osrs-panel border border-osrs-gold/15 rounded-2xl p-4 sm:p-5 shadow-xl flex flex-col min-h-[640px]">
+    <div className="motion-module-enter bg-osrs-panel border border-white/10 rounded-2xl p-4 sm:p-5 shadow-xl flex flex-col min-h-[640px]">
       
       {/* Header section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-osrs-gold/10 pb-5 mb-5">
@@ -291,7 +291,7 @@ export const ClanLeaderboard: React.FC = () => {
                 href={`https://wiseoldman.net/groups/${REAL_WOM_GROUP_ID}`}
                 target="_blank"
                 rel="noreferrer"
-                className="text-[10px] font-mono font-bold tracking-widest text-osrs-gold bg-osrs-gold/10 hover:bg-osrs-gold/20 px-2 py-0.5 rounded border border-osrs-gold/25 flex items-center gap-1 transition-all"
+                className="theme-link-info text-[10px] font-mono font-bold tracking-widest bg-osrs-rune/10 hover:bg-osrs-rune/20 px-2 py-0.5 rounded border border-osrs-rune/30 flex items-center gap-1 transition-all"
                 title="View on Wise Old Man"
               >
                 <span>WOM #{clanInfo?.id || REAL_WOM_GROUP_ID}</span>
@@ -515,6 +515,7 @@ export const ClanLeaderboard: React.FC = () => {
                     let rankBg = 'bg-osrs-dark/40';
                     let rankBorder = 'border-gray-800/60';
                     let rankText = 'text-gray-400';
+                    let valueText = 'text-gray-200';
                     let rowStyle = "hover:bg-osrs-panelLight/40 transition-all cursor-pointer group border-l-4 border-l-transparent";
                     let rankIcon = null;
 
@@ -523,18 +524,21 @@ export const ClanLeaderboard: React.FC = () => {
                       rankBg = 'bg-gradient-to-b from-osrs-gold to-yellow-600 text-osrs-dark font-black';
                       rankBorder = 'border-osrs-gold shadow-[0_0_12px_rgba(225,176,51,0.5)]';
                       rankText = 'text-osrs-dark';
+                      valueText = 'text-osrs-gold';
                       rankIcon = <Trophy className="w-4 h-4 text-osrs-gold shrink-0 animate-bounce" />;
                     } else if (absoluteRank === 2) {
                       rowStyle = "bg-gradient-to-r from-osrs-rune/15 via-osrs-rune/5 to-transparent hover:from-osrs-rune/20 border-l-4 border-l-osrs-rune transition-all cursor-pointer group shadow-glow-rune relative overflow-hidden";
                       rankBg = 'bg-gradient-to-b from-osrs-rune to-blue-600 text-white font-bold';
                       rankBorder = 'border-osrs-rune shadow-[0_0_10px_rgba(74,153,232,0.4)]';
                       rankText = 'text-white';
+                      valueText = 'text-osrs-rune';
                       rankIcon = <Award className="w-4 h-4 text-osrs-rune shrink-0 animate-pulse" />;
                     } else if (absoluteRank === 3) {
                       rowStyle = "bg-gradient-to-r from-osrs-crimson/15 via-osrs-crimson/5 to-transparent hover:from-osrs-crimson/20 border-l-4 border-l-osrs-crimson transition-all cursor-pointer group shadow-glow-crimson relative overflow-hidden";
                       rankBg = 'bg-gradient-to-b from-osrs-crimson to-red-600 text-white font-bold';
                       rankBorder = 'border-osrs-crimson shadow-[0_0_10px_rgba(232,69,69,0.4)]';
                       rankText = 'text-white';
+                      valueText = 'text-osrs-crimson';
                       rankIcon = <Sparkles className="w-4 h-4 text-osrs-crimson shrink-0" />;
                     }
 
@@ -599,7 +603,7 @@ export const ClanLeaderboard: React.FC = () => {
                         </td>
 
                         {/* Value Column */}
-                        <td className="py-3.5 px-4 text-right pr-6 font-mono font-black text-xs text-osrs-gold">
+                        <td className={`py-3.5 px-4 text-right pr-6 font-mono font-black text-xs ${valueText}`}>
                           {getMetricValueString(member, selectedMetric)}
                         </td>
                       </tr>
