@@ -25,8 +25,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const menuItems: Array<{ id: View; label: string; icon: React.ElementType; badge?: string; badgeColor?: string }> = [
     { id: 'dashboard', label: 'Headquarters', icon: LayoutDashboard },
-    { id: 'leaderboard', label: 'Clan Highscores', icon: Trophy, badge: 'Live', badgeColor: 'bg-osrs-panelLight/50 text-gray-300 border-gray-700/80' },
-    { id: 'raffles', label: 'Grand Raffles', icon: Sparkles, badge: 'Win GP', badgeColor: 'bg-osrs-panelLight/50 text-gray-300 border-gray-700/80' },
+    { id: 'leaderboard', label: 'Clan Highscores', icon: Trophy, badge: 'Ranks', badgeColor: 'bg-osrs-rune/15 text-osrs-rune border-osrs-rune/30' },
+    { id: 'raffles', label: 'Grand Raffles', icon: Sparkles, badge: 'Events', badgeColor: 'bg-osrs-rune/10 text-osrs-rune border-osrs-rune/25' },
     { id: 'bingo', label: 'Active Bingo', icon: Grid },
     { id: 'prices', label: 'GE Price Checker', icon: Coins },
   ];
@@ -76,7 +76,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Main Sidebar Element (responsive fixed on mobile/tablet, static on lg) */}
       <aside 
         id="sidebar-container" 
-        className={`fixed lg:static inset-y-0 left-0 z-50 w-72 bg-osrs-panel border-r border-osrs-gold/15 flex flex-col h-full shrink-0 select-none transition-transform duration-300 ease-in-out ${
+        className={`fixed lg:static inset-y-0 left-0 z-50 w-72 bg-osrs-panel border-r border-white/10 flex flex-col h-full shrink-0 select-none transition-transform duration-300 ease-in-out ${
           isOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:translate-x-0'
         }`}
       >
@@ -126,7 +126,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <span className="text-[9px] uppercase font-mono tracking-wider text-gray-500 font-bold">
               Clan Navigation
             </span>
-            <span className="text-[9px] font-mono text-osrs-gold/60">5 Modules</span>
+            <span className="text-[9px] font-mono text-gray-500">5 Modules</span>
           </div>
 
           {menuItems.map((item) => {
@@ -137,14 +137,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 id={`nav-item-${item.id}`}
                 key={item.id}
                 onClick={() => handleSelectView(item.id)}
-                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition-all duration-200 group outline-none border ${
+                className={`nav-shell-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold tracking-wide group outline-none border ${
                   isActive
-                    ? 'bg-osrs-panelLight border-osrs-gold/30 text-osrs-gold shadow-glow-gold'
-                    : 'text-gray-400 hover:text-gray-200 hover:bg-osrs-panelLight/40 border-transparent'
+                    ? 'nav-shell-item-active'
+                    : 'nav-shell-item-inactive hover:text-gray-200 hover:bg-osrs-panelLight/50 border-transparent'
                 }`}
               >
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <Icon className={`w-4 h-4 shrink-0 transition-colors ${isActive ? 'text-osrs-gold' : 'text-gray-500 group-hover:text-gray-300'}`} />
+                  <Icon className={`nav-shell-icon w-4 h-4 shrink-0 transition-colors ${isActive ? 'text-osrs-gold' : 'text-gray-500 group-hover:text-gray-300'}`} />
                   <span className="font-sans truncate">{item.label}</span>
                 </div>
                 
@@ -169,14 +169,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 onOpenBotModal();
                 if (onClose) onClose();
               }}
-              className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition-all duration-200 group outline-none border border-indigo-500/30 bg-gradient-to-r from-indigo-950/40 to-purple-950/40 text-indigo-300 hover:text-white hover:border-indigo-400 mt-2 shadow-md"
+              className="venny-chrome w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition-all duration-200 group outline-none border hover:text-white hover:border-osrs-magic/70 mt-2 shadow-md"
             >
               <div className="flex items-center gap-2.5 min-w-0">
-                <Bot className="w-4 h-4 shrink-0 text-indigo-400 group-hover:scale-110 transition-transform" />
+                <Bot className="w-4 h-4 shrink-0 text-osrs-magic group-hover:scale-110 transition-transform" />
                 <span className="font-sans truncate font-bold">Venny Bot Bridge</span>
               </div>
-              <span className="text-[9px] font-mono px-1.5 py-0.5 rounded border bg-indigo-500/20 text-indigo-300 border-indigo-500/40 flex items-center gap-1">
-                <span className="w-1 h-1 rounded-full bg-indigo-300"></span>
+              <span className="venny-chrome-subtle text-[9px] font-mono px-1.5 py-0.5 rounded border flex items-center gap-1">
+                <span className="w-1 h-1 rounded-full bg-osrs-rune"></span>
                 REST API
               </span>
             </button>
@@ -251,9 +251,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
             )}
 
             <div className="flex items-center justify-between text-[9px] text-gray-500 font-mono">
-              <span>RuneLite Plugin:</span>
-              <span className="flex items-center gap-1 text-gray-300 font-bold">
-                <span className="w-1 h-1 rounded-full bg-gray-400"></span>
+              <span>RuneLite Bridge:</span>
+              <span className="flex items-center gap-1 text-osrs-rune font-bold">
+                <span className="w-1 h-1 rounded-full bg-osrs-rune"></span>
                 Linked
               </span>
             </div>

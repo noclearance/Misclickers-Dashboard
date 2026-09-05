@@ -19,6 +19,155 @@
   background: #eab308;
 }
 
+/* HUB 2.0 semantic role tokens (palette values unchanged) */
+:root {
+  --osrs-dark: #0a0b10;
+  --osrs-panel: #121420;
+  --osrs-panel-light: #1b1f32;
+  --osrs-gold: #e1b033;
+  --osrs-crimson: #e84545;
+  --osrs-poison: #00fa9a;
+  --osrs-rune: #4a99e8;
+  --osrs-magic: #d254ff;
+  --osrs-text-primary: #f3f5fa;
+  --osrs-text-muted: #a4adbe;
+}
+
+.theme-title-primary {
+  color: var(--osrs-gold);
+}
+
+.theme-link-info {
+  color: var(--osrs-rune);
+}
+
+.theme-accent-danger {
+  color: var(--osrs-crimson);
+}
+
+.surface-nested-contrast {
+  background: var(--osrs-panel-light);
+  border: 1px solid rgba(164, 173, 190, 0.18);
+  color: var(--osrs-text-primary);
+}
+
+.venny-chrome {
+  background: linear-gradient(90deg, rgba(210, 84, 255, 0.15) 0%, rgba(74, 153, 232, 0.12) 100%);
+  border-color: rgba(210, 84, 255, 0.4);
+  color: #e9d1ff;
+}
+
+.venny-chrome-subtle {
+  background: rgba(210, 84, 255, 0.1);
+  border-color: rgba(210, 84, 255, 0.35);
+  color: #e9d1ff;
+}
+
+/* Motion kit: module enter + nav active + online pulse + bingo micro-interactions */
+@keyframes moduleEnter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.motion-module-enter {
+  animation: moduleEnter 180ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.nav-shell-item {
+  transition: background-color 150ms ease, border-color 150ms ease, box-shadow 150ms ease, color 150ms ease;
+}
+
+.nav-shell-item-active {
+  background: rgba(27, 31, 50, 0.95);
+  border-color: rgba(225, 176, 51, 0.45);
+  color: var(--osrs-gold);
+  box-shadow: 0 0 12px rgba(225, 176, 51, 0.16);
+}
+
+.nav-shell-item-inactive {
+  color: var(--osrs-text-muted);
+}
+
+.status-online-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--osrs-poison);
+}
+
+@keyframes onlinePulse {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(0, 250, 154, 0.35);
+  }
+  50% {
+    transform: scale(1.08);
+    box-shadow: 0 0 0 6px rgba(0, 250, 154, 0);
+  }
+}
+
+.status-online-dot {
+  width: 0.35rem;
+  height: 0.35rem;
+  border-radius: 9999px;
+  background: var(--osrs-poison);
+  animation: onlinePulse 2.6s ease-in-out infinite;
+}
+
+.status-offline-dot {
+  width: 0.35rem;
+  height: 0.35rem;
+  border-radius: 9999px;
+  background: #6b7280;
+}
+
+.bingo-tile {
+  transition: transform 180ms ease, border-color 180ms ease, background-color 180ms ease, box-shadow 180ms ease, opacity 180ms ease;
+}
+
+.bingo-tile:hover {
+  transform: translateY(-4px);
+  border-color: rgba(225, 176, 51, 0.32);
+  background: rgba(27, 31, 50, 0.75);
+  box-shadow: 0 12px 20px rgba(5, 8, 16, 0.32);
+}
+
+.bingo-tile-complete {
+  background: linear-gradient(135deg, rgba(0, 250, 154, 0.16) 0%, rgba(27, 31, 50, 0.94) 70%);
+  border-color: rgba(0, 250, 154, 0.38);
+}
+
+.bingo-tile-complete:hover {
+  border-color: rgba(0, 250, 154, 0.55);
+  box-shadow: 0 10px 20px rgba(0, 250, 154, 0.12);
+}
+
+@keyframes bingoCheckPop {
+  0% {
+    transform: scale(0.72);
+    opacity: 0.45;
+  }
+  80% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.bingo-check-pop {
+  animation: bingoCheckPop 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 /* Keyframes for elegant loading and item triggers */
 @keyframes fadeIn {
   from {
@@ -32,6 +181,10 @@
 }
 
 .animate-fade-in {
+  animation: fadeIn 0.24s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.animate-fadeIn {
   animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
@@ -143,6 +296,27 @@
 
 .shimmer-unison-sync {
   transition: all 300ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .motion-module-enter,
+  .status-online-dot,
+  .bingo-check-pop,
+  .animate-fade-in,
+  .animate-fadeIn {
+    animation: none !important;
+  }
+
+  .bingo-tile,
+  .nav-shell-item,
+  .shimmer-unison-sync {
+    transition: none !important;
+  }
+
+  .bingo-tile:hover {
+    transform: none;
+    box-shadow: none;
+  }
 }
 
 /* CSS Container Query definitions for modular responsive components */
