@@ -31,6 +31,9 @@ const AppContent: React.FC = () => {
         id: typeof parsed.id === 'string' && parsed.id.trim() ? parsed.id.trim() : null,
         username: parsed.username,
         avatarUrl: parsed.avatarUrl,
+        roleIds: Array.isArray(parsed.roleIds)
+          ? parsed.roleIds.filter((roleId: unknown): roleId is string => typeof roleId === 'string')
+          : [],
       };
     } catch {
       return null;

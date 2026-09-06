@@ -146,8 +146,17 @@ export interface DiscordSessionUser {
   id: string | null;
   username: string;
   avatarUrl: string;
+  roleIds: string[];
 }
 
 export type HubMode = 'guest' | 'member' | 'staff';
+
+export interface DiscordMemberRoleResolution {
+  userId: string;
+  roleIds: string[];
+  resolution: 'live' | 'unconfigured' | 'not_found' | 'error' | 'missing_id';
+  message: string;
+  guildId?: string;
+}
 
 export type View = 'dashboard' | 'leaderboard' | 'raffles' | 'bingo' | 'prices';
