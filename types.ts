@@ -142,4 +142,12 @@ export interface BotEventPayload {
   timestamp?: string;
 }
 
+export interface DiscordSessionUser {
+  id: string | null;
+  username: string;
+  avatarUrl: string;
+}
+
+export type HubMode = 'guest' | 'member' | 'staff';
+
 export type View = 'dashboard' | 'leaderboard' | 'raffles' | 'bingo' | 'prices';

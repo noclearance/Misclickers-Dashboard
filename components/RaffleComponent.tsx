@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Sparkles, Coins, Flame, Disc, CheckCircle, ShieldAlert, Clock, ArrowUpRight, Trophy, Heart } from 'lucide-react';
-import type { Raffle } from '../types';
+import type { DiscordSessionUser, Raffle } from '../types';
 import { getRaffles, enterRaffle } from '../services/api';
 
 interface RaffleComponentProps {
-  discordUser: { username: string; avatarUrl: string } | null;
+  discordUser: DiscordSessionUser | null;
   onConnectClick: () => void;
 }
 

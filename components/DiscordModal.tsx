@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { Shield, Check, Lock, User, ExternalLink, X, RefreshCw, AlertTriangle, Disc } from 'lucide-react';
+import type { DiscordSessionUser } from '../types';
 
 interface DiscordModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAuthorize: (user: { username: string; avatarUrl: string }) => void;
+  onAuthorize: (user: DiscordSessionUser) => void;
 }
 
 export const DiscordModal: React.FC<DiscordModalProps> = ({ isOpen, onClose, onAuthorize }) => {
   const [username, setUsername] = useState<string>('');
+  const [discordUserId, setDiscordUserId] = useState<string>('');
   const [selectedAvatarIdx, setSelectedAvatarIdx] = useState<number>(0);
   const [authStage, setAuthStage] = useState<'prompt' | 'authenticating' | 'success'>('prompt');
   const [progressMsg, setProgressMsg] = useState<string>('');
@@ -51,12 +53,14 @@ export const DiscordModal: React.FC<DiscordModalProps> = ({ isOpen, onClose, onA
             setAuthStage('success');
             setTimeout(() => {
               onAuthorize({
+                id: discordUserId.trim() || null,
                 username: username.trim(),
                 avatarUrl: avatarPresets[selectedAvatarIdx]
               });
               // Reset modal
               setAuthStage('prompt');
               setUsername('');
+              setDiscordUserId('');
               onClose();
             }, 1200);
           }, 600);
@@ -140,6 +144,24 @@ export const DiscordModal: React.FC<DiscordModalProps> = ({ isOpen, onClose, onA
                   />
                   <User className="w-4 h-4 text-gray-500 absolute right-3.5 top-3.5" />
                 </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">
+                  Discord User ID (Snowflake)
+                </label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  placeholder="e.g. 123456789012345678"
+                  value={discordUserId}
+                  onChange={(e) => setDiscordUserId(e.target.value)}
+                  className="w-full bg-[#1e1f22] border border-transparent focus:border-[#5865F2] rounded px-4 py-2.5 text-sm text-white outline-none transition-all placeholder-gray-500 font-mono"
+                />
+                <p className="text-[10px] text-gray-500 leading-relaxed">
+                  Optional for basic access. Required for staff tools because staff mode is verified from this ID against <code>VITE_STAFF_DISCORD_IDS</code>.
+                </p>
               </div>
 
               {/* Avatar Selector */}
