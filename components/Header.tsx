@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, Disc, LogOut, Menu, X, Bot } from 'lucide-react';
-import type { View } from '../types';
+import type { DiscordSessionUser, HubMode, View } from '../types';
 
 interface HeaderProps {
   clanName: string;
-  discordUser: { username: string; avatarUrl: string } | null;
+  discordUser: DiscordSessionUser | null;
+  hubMode: HubMode;
   onConnectClick: () => void;
   onDisconnect: () => void;
   onOpenBotModal?: () => void;
@@ -17,6 +18,7 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({
   clanName,
   discordUser,
+  hubMode,
   onConnectClick,
   onDisconnect,
   onOpenBotModal,
@@ -87,7 +89,7 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
 
         <div id="header-controls" className="flex items-center gap-2 sm:gap-3">
-          {onOpenBotModal && (
+          {hubMode === 'staff' && onOpenBotModal && (
             <button
               onClick={onOpenBotModal}
               className="hidden md:flex venny-chrome items-center gap-1.5 border hover:border-osrs-magic/70 hover:text-white px-2.5 sm:px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all shadow-md active:scale-95"

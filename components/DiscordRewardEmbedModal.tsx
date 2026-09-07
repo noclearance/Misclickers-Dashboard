@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Trophy, Coins, Sparkles, MessageSquare, ExternalLink,
   X, Check, Send, ShieldCheck, Flame, Award, Gift, Radio, Share2
@@ -11,6 +11,7 @@ interface DiscordRewardEmbedModalProps {
   onClose: () => void;
   selectedReward?: BotRewardAnnouncement | null;
   allRewards?: BotRewardAnnouncement[];
+  canManageRewards?: boolean;
   onRewardAnnounced?: (reward: BotRewardAnnouncement) => void;
 }
 
@@ -19,6 +20,7 @@ export const DiscordRewardEmbedModal: React.FC<DiscordRewardEmbedModalProps> = (
   onClose,
   selectedReward,
   allRewards = [],
+  canManageRewards = false,
   onRewardAnnounced,
 }) => {
   const [activeTab, setActiveTab] = useState<'view' | 'create'>('view');
@@ -55,6 +57,12 @@ export const DiscordRewardEmbedModal: React.FC<DiscordRewardEmbedModalProps> = (
     '🦀': 14
   });
   const [userReacted, setUserReacted] = useState<{ [key: string]: boolean }>({});
+
+  useEffect(() => {
+    if (!canManageRewards && activeTab === 'create') {
+      setActiveTab('view');
+    }
+  }, [canManageRewards, activeTab]);
 
   if (!isOpen) return null;
 
@@ -189,17 +197,19 @@ export const DiscordRewardEmbedModal: React.FC<DiscordRewardEmbedModalProps> = (
               <Trophy className="w-3.5 h-3.5" />
               Live Discord Embed
             </button>
-            <button
-              onClick={() => setActiveTab('create')}
-              className={`px-3 py-1.5 rounded-md font-semibold transition-all flex items-center gap-1.5 ${
-                activeTab === 'create'
-                  ? 'bg-[#5865F2] text-white shadow-md'
-                  : 'bg-[#2b2d31] text-gray-300 hover:text-white'
-              }`}
-            >
-              <Send className="w-3.5 h-3.5" />
-              Broadcast New Reward
-            </button>
+            {canManageRewards && (
+              <button
+                onClick={() => setActiveTab('create')}
+                className={`px-3 py-1.5 rounded-md font-semibold transition-all flex items-center gap-1.5 ${
+                  activeTab === 'create'
+                    ? 'bg-[#5865F2] text-white shadow-md'
+                    : 'bg-[#2b2d31] text-gray-300 hover:text-white'
+                }`}
+              >
+                <Send className="w-3.5 h-3.5" />
+                Broadcast New Reward
+              </button>
+            )}
           </div>
 
           <div className="flex items-center gap-2 text-gray-400 font-mono text-xs">
@@ -413,40 +423,48 @@ export const DiscordRewardEmbedModal: React.FC<DiscordRewardEmbedModalProps> = (
               </div>
 
               {/* Settlement / Winner Claim Action */}
-              <div className="bg-[#1e1f22] p-4 rounded-xl border border-gray-700/60 flex items-center justify-between flex-wrap gap-4">
-                <div>
-                  <h5 className="font-bold text-white text-xs">Event Winner Settlement</h5>
+              {canManageRewards ? (
+                <div className="bg-[#1e1f22] p-4 rounded-xl border border-gray-700/60 flex items-center justify-between flex-wrap gap-4">
+                  <div>
+                    <h5 className="font-bold text-white text-xs">Event Winner Settlement</h5>
+                    <p className="text-xs text-gray-400">
+                      Once the competition concludes in Wise Old Man, payout confirmation is sent through Venny.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={claimUsername}
+                      onChange={(e) => setClaimUsername(e.target.value)}
+                      placeholder="Winner RSN"
+                      className="bg-[#2b2d31] border border-gray-700 text-white text-xs px-3 py-2 rounded-lg font-mono focus:border-osrs-gold outline-none"
+                    />
+                    <button
+                      onClick={handleClaimReward}
+                      disabled={isClaiming || !currentReward?.active}
+                      className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                        currentReward?.active
+                          ? 'bg-osrs-gold text-osrs-dark hover:bg-yellow-500 shadow-md'
+                          : 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                      }`}
+                    >
+                      <Award className="w-3.5 h-3.5" />
+                      {isClaiming ? 'Settling...' : currentReward?.active ? 'Confirm Payout' : 'Paid Out'}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-[#1e1f22] p-4 rounded-xl border border-gray-700/60">
                   <p className="text-xs text-gray-400">
-                    Once the competition concludes in Wise Old Man, payout confirmation is sent through Venny.
+                    Reward payouts are staff-only. Members can review embeds here and claim via Discord announcements.
                   </p>
                 </div>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={claimUsername}
-                    onChange={(e) => setClaimUsername(e.target.value)}
-                    placeholder="Winner RSN"
-                    className="bg-[#2b2d31] border border-gray-700 text-white text-xs px-3 py-2 rounded-lg font-mono focus:border-osrs-gold outline-none"
-                  />
-                  <button
-                    onClick={handleClaimReward}
-                    disabled={isClaiming || !currentReward?.active}
-                    className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
-                      currentReward?.active
-                        ? 'bg-osrs-gold text-osrs-dark hover:bg-yellow-500 shadow-md'
-                        : 'bg-gray-700 text-gray-400 cursor-not-allowed'
-                    }`}
-                  >
-                    <Award className="w-3.5 h-3.5" />
-                    {isClaiming ? 'Settling...' : currentReward?.active ? 'Confirm Payout' : 'Paid Out'}
-                  </button>
-                </div>
-              </div>
+              )}
             </div>
           )}
 
           {/* TAB 2: BROADCAST NEW REWARD FORM */}
-          {activeTab === 'create' && (
+          {activeTab === 'create' && canManageRewards && (
             <form onSubmit={handleCreateAnnouncement} className="space-y-4">
               <div className="bg-indigo-950/30 border border-indigo-500/30 p-4 rounded-xl text-xs space-y-1">
                 <h4 className="font-bold text-white flex items-center gap-1.5">

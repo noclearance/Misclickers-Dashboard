@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { 
   Trophy, Swords, Sparkles, Search, User, Shield, Timer, 
   Coins, ShieldAlert, Skull, Flame, Plus, RefreshCw, MessageSquare, 
-  MousePointerClick, CheckCircle, Bot, Zap, ExternalLink, 
+  MousePointerClick, CheckCircle, Bot, Zap, ExternalLink, Disc,
   Crown, Grid, ChevronRight 
 } from 'lucide-react';
-import type { BotRewardAnnouncement } from '../types';
+import type { BotRewardAnnouncement, DiscordSessionUser, HubMode } from '../types';
 import { useDashboardData } from '../hooks/useDashboardData';
 import { getBotSyncStatus } from '../services/api';
 import { useGlobalLoading } from '../context/GlobalLoadingProvider';
@@ -20,7 +20,8 @@ import { ClanLeadersSkeleton } from './skeletons/ClanLeadersSkeleton';
 import { StatsCardsSkeleton } from './skeletons/StatsCardsSkeleton';
 
 interface DashboardProps {
-  discordUser: { username: string; avatarUrl: string } | null;
+  discordUser: DiscordSessionUser | null;
+  mode: HubMode;
   onConnectClick: () => void;
   onOpenBotModal?: () => void;
   onNavigateToBingo?: () => void;
@@ -28,6 +29,7 @@ interface DashboardProps {
 
 export const Dashboard: React.FC<DashboardProps> = ({ 
   discordUser, 
+  mode,
   onConnectClick, 
   onOpenBotModal,
   onNavigateToBingo 
@@ -69,6 +71,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const [newIncidentType, setNewIncidentType] = useState<string>('Prayer Flicker Failure');
   const [newIncidentDesc, setNewIncidentDesc] = useState<string>('');
   const [newIncidentDanger, setNewIncidentDanger] = useState<'mild' | 'moderate' | 'catastrophic'>('mild');
+  const isGuest = mode === 'guest';
+  const isStaff = mode === 'staff';
 
   useEffect(() => {
     let mounted = true;
@@ -105,10 +109,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
       return valB - valA;
     });
 
-  if (loading || loadingState.initial || (globalLoading && globalLoading.isShimmering && members.length === 0)) {
-    return <DashboardSkeleton />;
-  }
-
   // Calculate sum metrics directly from live data
   const totalXpGained = members.reduce((sum, m) => sum + (m.xpGained || 0), 0);
   const totalBossKc = members.reduce((sum, m) => sum + (m.bossKc || 0), 0);
@@ -132,6 +132,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     ? rewards.find((reward) => reward.competitionId === focusCompetition.id) || null
     : null;
   const rewardRailItems = rewards.slice(0, 6);
+  const guestTeaserActivities = activities.slice(0, 3);
 
   const handleOpenReward = (reward?: BotRewardAnnouncement) => {
     if (!reward && rewards.length === 0) return;
@@ -146,6 +147,90 @@ export const Dashboard: React.FC<DashboardProps> = ({
       : bridgeStatus === 'degraded'
       ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
       : 'bg-rose-500/20 text-rose-300 border-rose-500/40';
+
+  if (isGuest) {
+    return (
+      <div id="guest-hq-landing" className="space-y-6 max-w-6xl mx-auto motion-module-enter">
+        <section className="relative overflow-hidden bg-gradient-to-r from-osrs-panel to-osrs-dark border border-osrs-gold/20 rounded-3xl p-6 sm:p-8 shadow-lg">
+          <div className="absolute -top-12 -right-16 w-72 h-72 bg-osrs-gold/10 rounded-full blur-3xl pointer-events-none"></div>
+          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+            <div className="lg:col-span-8 space-y-3">
+              <div className="inline-flex items-center gap-2 text-[10px] uppercase tracking-widest font-mono text-osrs-gold">
+                <Flame className="w-3.5 h-3.5" />
+                Misclickerz clan headquarters
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-serif font-black text-transparent bg-clip-text bg-gradient-to-r from-osrs-gold via-yellow-100 to-amber-500">
+                WELCOME TO THE MISCLICKERZ HUB
+              </h2>
+              <p className="text-sm text-gray-350 max-w-2xl leading-relaxed">
+                Track SOTW races, bingo progress, and clan highscores in one place. Sync your Discord profile to unlock member features and live personal activity.
+              </p>
+              <button
+                onClick={onConnectClick}
+                className="mt-2 inline-flex items-center gap-2 bg-[#5865F2] hover:bg-[#4752C4] text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all shadow"
+              >
+                <Disc className="w-4 h-4" />
+                <span>Sync Discord</span>
+              </button>
+            </div>
+            <div className="lg:col-span-4 flex justify-center lg:justify-end">
+              <img
+                src="/src/assets/images/mislick_crest_1783924581674.jpg"
+                alt="Misclickerz Crest"
+                className="w-36 h-36 rounded-full object-cover border-4 border-osrs-gold/30 shadow-2xl"
+                referrerPolicy="no-referrer"
+              />
+            </div>
+          </div>
+        </section>
+
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <article className="bg-osrs-panel border border-osrs-gold/15 rounded-2xl p-4 space-y-1.5">
+            <p className="text-[10px] uppercase tracking-wider font-mono text-gray-500">Live SOTW Teaser</p>
+            <p className="text-lg font-serif font-bold text-osrs-gold truncate">{activeCompTitle}</p>
+            <p className="text-xs text-gray-400">{focusCompetition ? `${focusCompetition.participants.length} contenders tracked.` : 'No active event is currently tracked.'}</p>
+          </article>
+          <article className="bg-osrs-panel border border-osrs-gold/15 rounded-2xl p-4 space-y-1.5">
+            <p className="text-[10px] uppercase tracking-wider font-mono text-gray-500">Bingo Progress Peek</p>
+            <p className="text-lg font-serif font-bold text-osrs-gold">{completedBingoCount}/{totalBingoTiles} tiles</p>
+            <p className="text-xs text-gray-400">{bingoPercent}% complete across the clan board.</p>
+          </article>
+          <article className="bg-osrs-panel border border-osrs-gold/15 rounded-2xl p-4 space-y-1.5">
+            <p className="text-[10px] uppercase tracking-wider font-mono text-gray-500">Highscore Snapshot</p>
+            <p className="text-lg font-serif font-bold text-osrs-gold">{members.length} raiders</p>
+            <p className="text-xs text-gray-400">Current XP front-runner: {topXpLeader}</p>
+          </article>
+        </section>
+
+        <section className="bg-osrs-panel border border-osrs-gold/15 rounded-2xl p-5 space-y-3">
+          <div className="flex items-center justify-between gap-3">
+            <h3 className="text-sm font-serif font-black tracking-wide text-gray-100 uppercase">Recent Clan Activity</h3>
+            <span className="text-[10px] font-mono text-gray-500">Preview</span>
+          </div>
+          {guestTeaserActivities.length === 0 ? (
+            <p className="text-xs text-gray-500 font-mono">
+              {loading || loadingState.initial ? 'Syncing live highlights...' : 'No live highlights yet.'}
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {guestTeaserActivities.map((activity) => (
+                <div key={activity.id} className="bg-osrs-dark/45 border border-gray-850 rounded-xl px-3 py-2.5">
+                  <p className="text-xs text-gray-200">
+                    <span className="font-bold text-osrs-gold">@{activity.username}</span> {activity.title}
+                  </p>
+                  <p className="text-[10px] text-gray-500 mt-0.5">{activity.timestamp}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      </div>
+    );
+  }
+
+  if (loading || loadingState.initial || (globalLoading && globalLoading.isShimmering && members.length === 0)) {
+    return <DashboardSkeleton />;
+  }
 
   return (
     <div id="dashboard-view" className="space-y-8 max-w-7xl mx-auto motion-module-enter">
@@ -374,9 +459,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
           <div className="flex items-center justify-between gap-3 border-b border-gray-800 pb-3.5 mb-3.5">
             <div>
               <h3 className="text-sm font-serif font-black tracking-wider text-gray-100 uppercase">Reward Broadcast Rail</h3>
-              <p className="text-[11px] text-gray-500 font-mono mt-1">Compact reward cards with separated browse vs payout actions.</p>
+              <p className="text-[11px] text-gray-500 font-mono mt-1">
+                {isStaff ? 'Compact reward cards with separated browse vs payout actions.' : 'Browse published reward embeds from active clan events.'}
+              </p>
             </div>
-            {onOpenBotModal && (
+            {isStaff && onOpenBotModal && (
               <button
                 onClick={onOpenBotModal}
                 className="text-xs text-indigo-300 hover:text-white border border-indigo-500/35 hover:border-indigo-400 bg-indigo-950/40 px-2.5 py-1.5 rounded-lg transition-all shrink-0"
@@ -423,19 +510,21 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     <span className="text-osrs-gold font-bold font-mono">{item.prizePool}</span>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 pt-1 border-t border-gray-800">
+                  <div className={`grid gap-2 pt-1 border-t border-gray-800 ${isStaff ? 'grid-cols-2' : 'grid-cols-1'}`}>
                     <button
                       onClick={() => handleOpenReward(item)}
                       className="text-xs font-semibold text-gray-200 hover:text-white border border-gray-700 hover:border-osrs-gold/40 bg-[#23252b] hover:bg-[#2c2f38] px-2.5 py-1.5 rounded-lg transition-all"
                     >
                       View Embed
                     </button>
-                    <button
-                      onClick={() => handleOpenReward(item)}
-                      className="text-xs font-bold text-rose-200 hover:text-white border border-rose-500/40 hover:border-rose-400 bg-rose-500/15 hover:bg-rose-500/25 px-2.5 py-1.5 rounded-lg transition-all"
-                    >
-                      Payout Actions
-                    </button>
+                    {isStaff && (
+                      <button
+                        onClick={() => handleOpenReward(item)}
+                        className="text-xs font-bold text-rose-200 hover:text-white border border-rose-500/40 hover:border-rose-400 bg-rose-500/15 hover:bg-rose-500/25 px-2.5 py-1.5 rounded-lg transition-all"
+                      >
+                        Payout Actions
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}
@@ -492,7 +581,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
           )}
 
           {/* Venny Discord Bot Integration Hub Card */}
-          {onOpenBotModal && (
+          {isStaff && onOpenBotModal && (
             <div className="bg-gradient-to-r from-indigo-950/40 via-purple-950/30 to-stone-900 border border-indigo-500/30 rounded-2xl p-4.5 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-lg">
               <div className="flex items-center gap-3.5">
                 <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shrink-0 shadow border border-indigo-400/40">
@@ -1193,6 +1282,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         onClose={() => setIsRewardModalOpen(false)}
         selectedReward={selectedReward}
         allRewards={rewards}
+        canManageRewards={isStaff}
         onRewardAnnounced={(newRew) => {
           setRewards(prev => [newRew, ...prev]);
         }}

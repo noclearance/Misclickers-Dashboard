@@ -12,15 +12,29 @@ import { VennyBotModal } from './components/VennyBotModal';
 import { GlobalLoadingProvider } from './context/GlobalLoadingProvider';
 import { onUnauthorized, UnauthorizedEventDetail } from './services/httpClient';
 import { ShieldAlert, X, KeyRound } from 'lucide-react';
-import type { View } from './types';
+import type { DiscordSessionUser, View } from './types';
+import { useHubMode } from './hooks/useHubMode';
 
 const AppContent: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>('dashboard');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
-  const [discordUser, setDiscordUser] = useState<{ username: string; avatarUrl: string } | null>(() => {
+  const [discordUser, setDiscordUser] = useState<DiscordSessionUser | null>(() => {
     try {
       const saved = localStorage.getItem('discord_user');
-      return saved ? JSON.parse(saved) : null;
+      if (!saved) return null;
+      const parsed = JSON.parse(saved);
+      if (!parsed || typeof parsed.username !== 'string' || typeof parsed.avatarUrl !== 'string') {
+        return null;
+      }
+
+      return {
+        id: typeof parsed.id === 'string' && parsed.id.trim() ? parsed.id.trim() : null,
+        username: parsed.username,
+        avatarUrl: parsed.avatarUrl,
+        roleIds: Array.isArray(parsed.roleIds)
+          ? parsed.roleIds.filter((roleId: unknown): roleId is string => typeof roleId === 'string')
+          : [],
+      };
     } catch {
       return null;
     }
@@ -28,6 +42,7 @@ const AppContent: React.FC = () => {
   const [isDiscordModalOpen, setIsDiscordModalOpen] = useState<boolean>(false);
   const [isVennyModalOpen, setIsVennyModalOpen] = useState<boolean>(false);
   const [unauthorizedError, setUnauthorizedError] = useState<UnauthorizedEventDetail | null>(null);
+  const { mode: hubMode, isStaff } = useHubMode(discordUser);
 
   // Global listener for 401 Unauthorized API responses
   useEffect(() => {
@@ -37,7 +52,13 @@ const AppContent: React.FC = () => {
     return () => unsubscribe();
   }, []);
 
-  const handleAuthorize = (user: { username: string; avatarUrl: string }) => {
+  useEffect(() => {
+    if (!isStaff) {
+      setIsVennyModalOpen(false);
+    }
+  }, [isStaff]);
+
+  const handleAuthorize = (user: DiscordSessionUser) => {
     setDiscordUser(user);
     localStorage.setItem('discord_user', JSON.stringify(user));
   };
@@ -53,8 +74,9 @@ const AppContent: React.FC = () => {
         return (
           <Dashboard 
             discordUser={discordUser} 
+            mode={hubMode}
             onConnectClick={() => setIsDiscordModalOpen(true)}
-            onOpenBotModal={() => setIsVennyModalOpen(true)}
+            onOpenBotModal={isStaff ? () => setIsVennyModalOpen(true) : undefined}
             onNavigateToBingo={() => setCurrentView('bingo')}
           />
         );
@@ -76,7 +98,7 @@ const AppContent: React.FC = () => {
       case 'bingo':
         return (
           <div>
-            <BingoBoard />
+            <BingoBoard mode={hubMode} />
           </div>
         );
       case 'prices':
@@ -89,8 +111,9 @@ const AppContent: React.FC = () => {
         return (
           <Dashboard 
             discordUser={discordUser} 
+            mode={hubMode}
             onConnectClick={() => setIsDiscordModalOpen(true)} 
-            onOpenBotModal={() => setIsVennyModalOpen(true)}
+            onOpenBotModal={isStaff ? () => setIsVennyModalOpen(true) : undefined}
           />
         );
     }
@@ -103,9 +126,10 @@ const AppContent: React.FC = () => {
         currentView={currentView} 
         setCurrentView={setCurrentView} 
         discordUser={discordUser} 
+        hubMode={hubMode}
         onConnectClick={() => setIsDiscordModalOpen(true)} 
         onDisconnect={handleDisconnect}
-        onOpenBotModal={() => setIsVennyModalOpen(true)}
+        onOpenBotModal={isStaff ? () => setIsVennyModalOpen(true) : undefined}
         isOpen={isMobileMenuOpen}
         onClose={() => setIsMobileMenuOpen(false)}
       />
@@ -115,9 +139,10 @@ const AppContent: React.FC = () => {
         <Header 
           clanName="Misclickerz" 
           discordUser={discordUser}
+          hubMode={hubMode}
           onConnectClick={() => setIsDiscordModalOpen(true)}
           onDisconnect={handleDisconnect}
-          onOpenBotModal={() => setIsVennyModalOpen(true)}
+          onOpenBotModal={isStaff ? () => setIsVennyModalOpen(true) : undefined}
           isMobileMenuOpen={isMobileMenuOpen}
           onToggleMobileMenu={() => setIsMobileMenuOpen(prev => !prev)}
           currentView={currentView}
@@ -125,7 +150,7 @@ const AppContent: React.FC = () => {
         />
 
         {/* Global 401 Unauthorized Notification Banner */}
-        {unauthorizedError && (
+        {unauthorizedError && isStaff && (
           <div id="global-unauthorized-banner" className="bg-rose-950/90 border-b border-rose-500/40 px-4 py-2.5 flex items-center justify-between gap-3 text-xs text-rose-200 animate-fadeIn z-20">
             <div className="flex items-center gap-2.5">
               <ShieldAlert className="w-4 h-4 text-rose-400 shrink-0" />
@@ -167,10 +192,12 @@ const AppContent: React.FC = () => {
       />
 
       {/* Venny Bot Backend Bridge Modal */}
-      <VennyBotModal
-        isOpen={isVennyModalOpen}
-        onClose={() => setIsVennyModalOpen(false)}
-      />
+      {isStaff && (
+        <VennyBotModal
+          isOpen={isVennyModalOpen}
+          onClose={() => setIsVennyModalOpen(false)}
+        />
+      )}
     </div>
   );
 };

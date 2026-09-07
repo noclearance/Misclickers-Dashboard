@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { LayoutDashboard, Grid, Coins, Trophy, Sparkles, Shield, MousePointerClick, AlertTriangle, Disc, LogOut, X, Bot } from 'lucide-react';
-import type { View } from '../types';
+import type { DiscordSessionUser, HubMode, View } from '../types';
 
 interface SidebarProps {
   currentView: View;
   setCurrentView: (view: View) => void;
-  discordUser: { username: string; avatarUrl: string } | null;
+  discordUser: DiscordSessionUser | null;
+  hubMode: HubMode;
   onConnectClick: () => void;
   onDisconnect: () => void;
   onOpenBotModal?: () => void;
@@ -17,6 +18,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   currentView, 
   setCurrentView, 
   discordUser, 
+  hubMode,
   onConnectClick, 
   onDisconnect,
   onOpenBotModal,
@@ -163,7 +165,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           })}
 
           {/* Venny Bot Bridge Link */}
-          {onOpenBotModal && (
+          {hubMode === 'staff' && onOpenBotModal && (
             <button
               onClick={() => {
                 onOpenBotModal();
@@ -252,9 +254,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
             <div className="flex items-center justify-between text-[9px] text-gray-500 font-mono">
               <span>RuneLite Bridge:</span>
-              <span className="flex items-center gap-1 text-osrs-rune font-bold">
-                <span className="w-1 h-1 rounded-full bg-osrs-rune"></span>
-                Linked
+              <span className={`flex items-center gap-1 font-bold ${
+                hubMode === 'staff' ? 'text-osrs-rune' : 'text-gray-400'
+              }`}>
+                <span className={`w-1 h-1 rounded-full ${
+                  hubMode === 'staff' ? 'bg-osrs-rune' : 'bg-gray-500'
+                }`}></span>
+                {hubMode === 'guest' ? 'Disconnected' : hubMode === 'member' ? 'Unknown' : 'Manage in Hub'}
               </span>
             </div>
 

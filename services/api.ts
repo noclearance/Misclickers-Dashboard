@@ -8,7 +8,8 @@ import type {
   BotSyncStatus,
   BotEventPayload,
   BotRewardAnnouncement,
-  OsrsItem
+  OsrsItem,
+  DiscordMemberRoleResolution
 } from '../types';
 import {
   http,
@@ -335,7 +336,15 @@ export async function getHealthCheck(): Promise<{ status: string; time: string; 
 }
 
 // ============================================================================
-// 6. OSRS Grand Exchange Pricing
+// 6. Discord Identity / Role Resolution
+// ============================================================================
+
+export async function resolveDiscordMemberRoles(userId: string): Promise<DiscordMemberRoleResolution> {
+  return http.get<DiscordMemberRoleResolution>(`/api/discord/member/${encodeURIComponent(userId)}`);
+}
+
+// ============================================================================
+// 7. OSRS Grand Exchange Pricing
 // ============================================================================
 
 /**
@@ -389,7 +398,7 @@ export async function getItemPrice(itemName: string): Promise<OsrsItem | null> {
 }
 
 // ============================================================================
-// 7. Real-Time Server-Sent Events (SSE) Listener
+// 8. Real-Time Server-Sent Events (SSE) Listener
 // ============================================================================
 
 /**
@@ -510,6 +519,7 @@ const VennyApi = {
   claimReward,
   // Bot & Live Activity
   getBotStatus,
+  resolveDiscordMemberRoles,
   logMisclick,
   logLootDrop,
   sendBotWebhook,

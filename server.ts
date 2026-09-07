@@ -8,6 +8,8 @@ const VENNY_SECRET = process.env.VENNY_API_KEY || 'configured-secret';
 const WOM_GROUP_ID = Number(process.env.WOM_GROUP_ID) || 24942; // Misclickerz
 const WOM_API_KEY = process.env.WOM_API_KEY || process.env.WISEOLDMAN_API_KEY || '';
 const VENNY_HEALTH_URL = 'https://grazybot.onrender.com/health';
+const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN?.trim() || '';
+const DISCORD_GUILD_ID = process.env.DISCORD_GUILD_ID?.trim() || '';
 
 // In-Memory Database State (persisted while server is up, synced with Wise Old Man & Venny bot)
 interface ServerState {
@@ -542,6 +544,69 @@ async function getVennyBridgeHealth(): Promise<VennyBridgeHealth> {
   }
 }
 
+interface DiscordRoleLookupResult {
+  roleIds: string[];
+  resolution: 'live' | 'unconfigured' | 'not_found' | 'error';
+  message: string;
+}
+
+async function resolveGuildMemberRoles(userId: string): Promise<DiscordRoleLookupResult> {
+  if (!DISCORD_BOT_TOKEN || !DISCORD_GUILD_ID) {
+    return {
+      roleIds: [],
+      resolution: 'unconfigured',
+      message: 'DISCORD_BOT_TOKEN or DISCORD_GUILD_ID is not configured; role lookup is unavailable.'
+    };
+  }
+
+  try {
+    const response = await fetch(
+      `https://discord.com/api/v10/guilds/${DISCORD_GUILD_ID}/members/${userId}`,
+      {
+        headers: {
+          'Authorization': `Bot ${DISCORD_BOT_TOKEN}`,
+          'Accept': 'application/json'
+        },
+        signal: AbortSignal.timeout(7000)
+      }
+    );
+
+    if (response.status === 404) {
+      return {
+        roleIds: [],
+        resolution: 'not_found',
+        message: 'Discord member was not found in the configured guild.'
+      };
+    }
+
+    if (!response.ok) {
+      const details = await response.text();
+      return {
+        roleIds: [],
+        resolution: 'error',
+        message: `Discord role lookup failed (${response.status}): ${details || response.statusText}`
+      };
+    }
+
+    const memberPayload: any = await response.json();
+    const roleIds = Array.isArray(memberPayload?.roles)
+      ? memberPayload.roles.filter((roleId: unknown): roleId is string => typeof roleId === 'string')
+      : [];
+
+    return {
+      roleIds,
+      resolution: 'live',
+      message: 'Guild roles resolved from Discord API.'
+    };
+  } catch (error: any) {
+    return {
+      roleIds: [],
+      resolution: 'error',
+      message: `Discord role lookup failed: ${error?.message || 'request failed'}`
+    };
+  }
+}
+
 // Function to pull live data from Wise Old Man Group
 async function syncWiseOldManData() {
   try {
@@ -789,6 +854,28 @@ async function startServer() {
       time: new Date().toISOString(),
       clan: 'Misclickerz',
       venny: vennyHealth
+    });
+  });
+
+  // Discord identity role resolution for hub session mode
+  app.get('/api/discord/member/:userId', async (req, res) => {
+    const userId = String(req.params.userId || '').trim();
+    if (!userId) {
+      return res.status(400).json({
+        userId: '',
+        roleIds: [],
+        resolution: 'missing_id',
+        message: 'Discord user ID is required.'
+      });
+    }
+
+    const result = await resolveGuildMemberRoles(userId);
+    return res.json({
+      userId,
+      roleIds: result.roleIds,
+      resolution: result.resolution,
+      message: result.message,
+      guildId: DISCORD_GUILD_ID || undefined
     });
   });
 

@@ -1,18 +1,22 @@
 import React, { useState } from 'react';
-import { Shield, Check, Lock, User, ExternalLink, X, RefreshCw, AlertTriangle, Disc } from 'lucide-react';
+import { Shield, Check, Lock, User, ExternalLink, X, RefreshCw, Disc } from 'lucide-react';
+import type { DiscordSessionUser } from '../types';
+import { resolveDiscordMemberRoles } from '../services/api';
 
 interface DiscordModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAuthorize: (user: { username: string; avatarUrl: string }) => void;
+  onAuthorize: (user: DiscordSessionUser) => void;
 }
 
 export const DiscordModal: React.FC<DiscordModalProps> = ({ isOpen, onClose, onAuthorize }) => {
   const [username, setUsername] = useState<string>('');
+  const [discordUserId, setDiscordUserId] = useState<string>('');
   const [selectedAvatarIdx, setSelectedAvatarIdx] = useState<number>(0);
   const [authStage, setAuthStage] = useState<'prompt' | 'authenticating' | 'success'>('prompt');
   const [progressMsg, setProgressMsg] = useState<string>('');
   const [progressPct, setProgressPct] = useState<number>(0);
+  const [roleSyncNote, setRoleSyncNote] = useState<string>('');
 
   // Preset Discord avatars
   const avatarPresets = [
@@ -26,43 +30,54 @@ export const DiscordModal: React.FC<DiscordModalProps> = ({ isOpen, onClose, onA
 
   if (!isOpen) return null;
 
-  const handleStartAuth = (e: React.FormEvent) => {
+  const handleStartAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!username.trim()) return;
 
     setAuthStage('authenticating');
     setProgressPct(5);
-    setProgressMsg('Initiating handshakes with discordapp.com...');
+    setProgressMsg('Preparing Discord identity sync...');
+    setRoleSyncNote('');
 
-    const stages = [
-      { pct: 25, msg: 'Resolving discord token exchanges...' },
-      { pct: 50, msg: 'Querying guild user membership rosters...' },
-      { pct: 75, msg: 'Linking Discord ID with active RuneLite databases...' },
-      { pct: 100, msg: 'Generating local session authorizations...' }
-    ];
+    const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+    await wait(300);
+    setProgressPct(35);
+    setProgressMsg('Resolving guild role membership...');
 
-    stages.forEach((step, index) => {
-      setTimeout(() => {
-        setProgressPct(step.pct);
-        setProgressMsg(step.msg);
+    const trimmedUserId = discordUserId.trim();
+    let roleIds: string[] = [];
+    let resolvedMessage = 'No Discord user ID provided. Continuing with member access.';
 
-        if (step.pct === 100) {
-          setTimeout(() => {
-            setAuthStage('success');
-            setTimeout(() => {
-              onAuthorize({
-                username: username.trim(),
-                avatarUrl: avatarPresets[selectedAvatarIdx]
-              });
-              // Reset modal
-              setAuthStage('prompt');
-              setUsername('');
-              onClose();
-            }, 1200);
-          }, 600);
-        }
-      }, (index + 1) * 600);
+    if (trimmedUserId) {
+      try {
+        const roleResolution = await resolveDiscordMemberRoles(trimmedUserId);
+        roleIds = roleResolution.roleIds || [];
+        resolvedMessage = roleResolution.message;
+      } catch (error: any) {
+        resolvedMessage = `Role lookup failed: ${error?.message || 'request failed'}`;
+      }
+    }
+
+    setProgressPct(75);
+    setProgressMsg('Finalizing hub session...');
+    setRoleSyncNote(resolvedMessage);
+    await wait(350);
+    setProgressPct(100);
+    setProgressMsg('Session synchronized.');
+
+    setAuthStage('success');
+    await wait(900);
+    onAuthorize({
+      id: trimmedUserId || null,
+      username: username.trim(),
+      avatarUrl: avatarPresets[selectedAvatarIdx],
+      roleIds
     });
+    // Reset modal
+    setAuthStage('prompt');
+    setUsername('');
+    setDiscordUserId('');
+    onClose();
   };
 
   return (
@@ -79,7 +94,7 @@ export const DiscordModal: React.FC<DiscordModalProps> = ({ isOpen, onClose, onA
           <div className="flex items-center gap-2">
             <Disc className="w-6 h-6 text-[#5865F2] animate-spin-slow" />
             <span className="font-sans font-black tracking-wide text-white uppercase text-sm">
-              Discord OAuth Port
+              Discord Identity Sync
             </span>
           </div>
           <button
@@ -142,6 +157,24 @@ export const DiscordModal: React.FC<DiscordModalProps> = ({ isOpen, onClose, onA
                 </div>
               </div>
 
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">
+                  Discord User ID (Snowflake)
+                </label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  placeholder="e.g. 123456789012345678"
+                  value={discordUserId}
+                  onChange={(e) => setDiscordUserId(e.target.value)}
+                  className="w-full bg-[#1e1f22] border border-transparent focus:border-[#5865F2] rounded px-4 py-2.5 text-sm text-white outline-none transition-all placeholder-gray-500 font-mono"
+                />
+                <p className="text-[10px] text-gray-500 leading-relaxed">
+                  Optional for basic access. Staff mode requires guild roles resolved from this Discord ID and matched against <code>VITE_STAFF_ROLE_IDS</code>.
+                </p>
+              </div>
+
               {/* Avatar Selector */}
               <div className="space-y-1.5">
                 <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">
@@ -176,8 +209,7 @@ export const DiscordModal: React.FC<DiscordModalProps> = ({ isOpen, onClose, onA
             <div className="flex gap-2 text-[10px] text-gray-400 leading-relaxed bg-[#2b2d31]/40 p-2.5 rounded">
               <Lock className="w-4 h-4 text-[#5865F2] shrink-0 mt-0.5" />
               <span>
-                Your login is mock-verified locally. We do not transmit passwords or personal data. 
-                RuneLite in-game syncing is simulated in real time.
+                This stores a local hub session (username/avatar/id). If <code>DISCORD_BOT_TOKEN</code> and <code>DISCORD_GUILD_ID</code> are configured, role IDs are resolved from the guild member API.
               </span>
             </div>
 
@@ -213,6 +245,11 @@ export const DiscordModal: React.FC<DiscordModalProps> = ({ isOpen, onClose, onA
               <p className="text-xs text-gray-400 font-mono italic max-w-xs leading-relaxed">
                 {progressMsg}
               </p>
+              {roleSyncNote && (
+                <p className="text-[11px] text-indigo-300 max-w-xs leading-relaxed">
+                  {roleSyncNote}
+                </p>
+              )}
             </div>
 
             {/* Simulated progress bar */}

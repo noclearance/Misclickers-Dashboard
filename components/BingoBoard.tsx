@@ -12,9 +12,13 @@ import {
   subscribeToBotEvents 
 } from '../services/api';
 import { BingoBoardSkeleton } from './skeletons/BingoProgressSkeleton';
-import type { BingoTile, ClanMember } from '../types';
+import type { BingoTile, ClanMember, HubMode } from '../types';
 
-export const BingoBoard: React.FC = () => {
+interface BingoBoardProps {
+  mode: HubMode;
+}
+
+export const BingoBoard: React.FC<BingoBoardProps> = ({ mode }) => {
   const [boardTiles, setBoardTiles] = useState<BingoTile[]>([]);
   const [clanMembers, setClanMembers] = useState<ClanMember[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -24,6 +28,7 @@ export const BingoBoard: React.FC = () => {
   const [proofUrl, setProofUrl] = useState<string>('');
   const [filterMode, setFilterMode] = useState<'all' | 'completed' | 'uncompleted'>('all');
   const [notifications, setNotifications] = useState<string[]>([]);
+  const isStaff = mode === 'staff';
 
   // Fetch live board and member data from Venny bot backend API
   const loadBingoData = async () => {
@@ -284,7 +289,7 @@ export const BingoBoard: React.FC = () => {
                   </span>
                 ) : (
                   <span className="text-[10px] font-mono text-gray-300 group-hover:text-osrs-gold transition-colors">
-                    Click to inspect / verify
+                    {isStaff ? 'Click to inspect / verify' : 'Click to inspect'}
                   </span>
                 )}
               </div>
@@ -354,54 +359,73 @@ export const BingoBoard: React.FC = () => {
                     </div>
                   </div>
 
-                  <button
-                    id="reset-tile-submission"
-                    onClick={() => handleResetTile(selectedTile.id)}
-                    className="w-full bg-osrs-crimson/10 hover:bg-osrs-crimson/20 border border-osrs-crimson/20 hover:border-osrs-crimson/30 text-osrs-crimson font-mono text-xs py-2.5 rounded-xl transition-all font-bold"
-                  >
-                    Reset Tile Completion State
-                  </button>
+                  {isStaff ? (
+                    <button
+                      id="reset-tile-submission"
+                      onClick={() => handleResetTile(selectedTile.id)}
+                      className="w-full bg-osrs-crimson/10 hover:bg-osrs-crimson/20 border border-osrs-crimson/20 hover:border-osrs-crimson/30 text-osrs-crimson font-mono text-xs py-2.5 rounded-xl transition-all font-bold"
+                    >
+                      Reset Tile Completion State
+                    </button>
+                  ) : (
+                    <div className="text-[11px] text-gray-400 bg-osrs-dark/60 border border-gray-800 rounded-xl p-3">
+                      Need a correction on this tile? Ask Misclickerz staff in Discord.
+                    </div>
+                  )}
                 </div>
               ) : (
-                <div className="space-y-4">
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] text-gray-400 font-mono uppercase tracking-wider block font-bold">Assign Raider</label>
-                    <select
-                      id="assign-member-select"
-                      value={completingMember}
-                      onChange={(e) => setCompletingMember(e.target.value)}
-                      className="w-full bg-osrs-dark border border-osrs-gold/15 focus:border-osrs-gold/45 rounded-xl px-4 py-2.5 text-xs text-gray-200 outline-none transition-all font-sans"
+                isStaff ? (
+                  <div className="space-y-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] text-gray-400 font-mono uppercase tracking-wider block font-bold">Assign Raider</label>
+                      <select
+                        id="assign-member-select"
+                        value={completingMember}
+                        onChange={(e) => setCompletingMember(e.target.value)}
+                        className="w-full bg-osrs-dark border border-osrs-gold/15 focus:border-osrs-gold/45 rounded-xl px-4 py-2.5 text-xs text-gray-200 outline-none transition-all font-sans"
+                      >
+                        <option value="">-- Choose Clan Member --</option>
+                        {clanMembers.map((member) => (
+                          <option key={member.id} value={member.username}>
+                            {member.username} ({member.role})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] text-gray-400 font-mono uppercase tracking-wider block font-bold">Proof URL / Screenshot (Optional)</label>
+                      <input
+                        type="url"
+                        placeholder="https://discord.com/channels/... or image link"
+                        value={proofUrl}
+                        onChange={(e) => setProofUrl(e.target.value)}
+                        className="w-full bg-osrs-dark border border-osrs-gold/15 focus:border-osrs-gold/45 rounded-xl px-4 py-2.5 text-xs text-gray-200 outline-none transition-all font-sans placeholder-gray-600"
+                      />
+                    </div>
+
+                    <button
+                      id="submit-tile-completion"
+                      disabled={!completingMember}
+                      onClick={() => handleMarkComplete(selectedTile.id)}
+                      className="w-full bg-osrs-gold hover:bg-osrs-goldHover disabled:bg-gray-800 disabled:text-gray-500 disabled:cursor-not-allowed font-sans text-xs uppercase font-extrabold py-3 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 text-osrs-dark"
                     >
-                      <option value="">-- Choose Clan Member --</option>
-                      {clanMembers.map((member) => (
-                        <option key={member.id} value={member.username}>
-                          {member.username} ({member.role})
-                        </option>
-                      ))}
-                    </select>
+                      <CheckSquare className="w-4 h-4" />
+                      Verify Achievement & Claim Tile
+                    </button>
                   </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] text-gray-400 font-mono uppercase tracking-wider block font-bold">Proof URL / Screenshot (Optional)</label>
-                    <input
-                      type="url"
-                      placeholder="https://discord.com/channels/... or image link"
-                      value={proofUrl}
-                      onChange={(e) => setProofUrl(e.target.value)}
-                      className="w-full bg-osrs-dark border border-osrs-gold/15 focus:border-osrs-gold/45 rounded-xl px-4 py-2.5 text-xs text-gray-200 outline-none transition-all font-sans placeholder-gray-600"
-                    />
+                ) : (
+                  <div className="space-y-3">
+                    <div className="bg-osrs-rune/10 border border-osrs-rune/25 rounded-xl p-4">
+                      <div className="text-[10px] font-mono uppercase tracking-wider text-osrs-rune font-bold">
+                        Read-only for members
+                      </div>
+                      <p className="text-xs text-gray-300 mt-1.5 leading-relaxed">
+                        Submit your proof in Discord using <code className="text-indigo-300">/bingo</code> and staff will verify the tile from the bot queue.
+                      </p>
+                    </div>
                   </div>
-
-                  <button
-                    id="submit-tile-completion"
-                    disabled={!completingMember}
-                    onClick={() => handleMarkComplete(selectedTile.id)}
-                    className="w-full bg-osrs-gold hover:bg-osrs-goldHover disabled:bg-gray-800 disabled:text-gray-500 disabled:cursor-not-allowed font-sans text-xs uppercase font-extrabold py-3 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 text-osrs-dark"
-                  >
-                    <CheckSquare className="w-4 h-4" />
-                    Verify Achievement & Claim Tile
-                  </button>
-                </div>
+                )
               )}
             </div>
 
