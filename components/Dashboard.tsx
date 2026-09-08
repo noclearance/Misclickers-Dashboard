@@ -64,7 +64,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
   // Filters & Interactivity State
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [sortBy, setSortBy] = useState<'clanPoints' | 'xpGained' | 'bossKc'>('clanPoints');
+  const [sortBy, setSortBy] = useState<'xpGained' | 'bossKc' | 'ehb'>('xpGained');
 
   // Misclick Logger Form State
   const [newIncidentMember, setNewIncidentMember] = useState<string>('');
@@ -1161,16 +1161,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 {/* Metric Mode buttons */}
                 <div className="grid grid-cols-3 gap-1 bg-osrs-dark p-1 rounded-xl border border-gray-850">
                   <button
-                    onClick={() => setSortBy('clanPoints')}
-                    className={`py-1.5 rounded-lg text-[9px] uppercase font-mono transition-all font-bold ${
-                      sortBy === 'clanPoints' 
-                        ? 'bg-osrs-panelLight border border-osrs-gold/25 text-osrs-gold shadow-glow-gold' 
-                        : 'text-gray-500 hover:text-gray-300 border-transparent'
-                    }`}
-                  >
-                    Points
-                  </button>
-                  <button
                     onClick={() => setSortBy('xpGained')}
                     className={`py-1.5 rounded-lg text-[9px] uppercase font-mono transition-all font-bold ${
                       sortBy === 'xpGained' 
@@ -1190,6 +1180,16 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   >
                     Boss KC
                   </button>
+                  <button
+                    onClick={() => setSortBy('ehb')}
+                    className={`py-1.5 rounded-lg text-[9px] uppercase font-mono transition-all font-bold ${
+                      sortBy === 'ehb' 
+                        ? 'bg-osrs-panelLight border border-osrs-gold/25 text-osrs-gold shadow-glow-gold' 
+                        : 'text-gray-500 hover:text-gray-300 border-transparent'
+                    }`}
+                  >
+                    EHB
+                  </button>
                 </div>
               </div>
 
@@ -1203,11 +1203,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   filteredMembers.map((member, idx) => {
                     // Formatting values
                     const metricLabel = 
-                      sortBy === 'clanPoints' 
-                        ? `${member.clanPoints.toLocaleString()} pts`
-                        : sortBy === 'xpGained'
+                      sortBy === 'xpGained'
                         ? `${((member.xpGained || 0) / 1_000_000).toFixed(1)}M XP`
-                        : `${(member.bossKc || 0).toLocaleString()} KC`;
+                        : sortBy === 'bossKc'
+                        ? `${(member.bossKc || 0).toLocaleString()} KC`
+                        : `${(member.ehb || 0).toFixed(2)} EHB`;
 
                     const placeBg = 
                       idx === 0 
@@ -1217,15 +1217,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
                         : idx === 2
                         ? 'bg-amber-700/15 border-amber-700/30 text-amber-500'
                         : 'bg-osrs-dark/80 border-gray-850 text-gray-400';
-
-                    // Comical custom rank tags based on score/points
-                    const getCustomRank = (pts: number) => {
-                      if (pts >= 11000) return 'Grandmaster Misclicker';
-                      if (pts >= 9000) return 'Expert Tile Clipper';
-                      if (pts >= 7000) return 'Brew Chugging Hero';
-                      if (pts >= 5000) return 'Slayer Choke Rookie';
-                      return 'Tile Skipper';
-                    };
 
                     return (
                       <div
@@ -1249,7 +1240,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                               )}
                             </div>
                             <div className="text-[8px] text-osrs-gold/60 font-mono uppercase tracking-wider font-bold truncate">
-                              {getCustomRank(member.clanPoints)}
+                              {member.role || 'Member'}
                             </div>
                           </div>
                         </div>
