@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { LayoutDashboard, Grid, Coins, Trophy, Sparkles, Shield, MousePointerClick, AlertTriangle, Disc, LogOut, X, Bot } from 'lucide-react';
 import type { DiscordSessionUser, HubMode, View } from '../types';
+import { getClanNow } from '../services/api';
 
 interface SidebarProps {
   currentView: View;
@@ -25,16 +26,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isOpen = false,
   onClose
 }) => {
-  const menuItems: Array<{ id: View; label: string; icon: React.ElementType; badge?: string; badgeColor?: string }> = [
-    { id: 'dashboard', label: 'Headquarters', icon: LayoutDashboard },
-    { id: 'leaderboard', label: 'Clan Highscores', icon: Trophy, badge: 'Ranks', badgeColor: 'bg-osrs-rune/15 text-osrs-rune border-osrs-rune/30' },
-    { id: 'raffles', label: 'Grand Raffles', icon: Sparkles, badge: 'Events', badgeColor: 'bg-osrs-rune/10 text-osrs-rune border-osrs-rune/25' },
-    { id: 'bingo', label: 'Active Bingo', icon: Grid },
-    { id: 'prices', label: 'GE Price Checker', icon: Coins },
-  ];
-
   // Misclick timer state
   const [secondsSinceMisclick, setSecondsSinceMisclick] = useState<number>(10432); // Mock initial value (~2h 53m)
+  const [hasActiveBingo, setHasActiveBingo] = useState<boolean>(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -42,6 +36,42 @@ export const Sidebar: React.FC<SidebarProps> = ({
     }, 1000);
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadClanNow = async () => {
+      try {
+        const clanNow = await getClanNow();
+        if (!mounted) return;
+        setHasActiveBingo(Boolean(clanNow?.bingo));
+      } catch {
+        if (!mounted) return;
+        setHasActiveBingo(false);
+      }
+    };
+
+    loadClanNow();
+    const interval = setInterval(loadClanNow, 60_000);
+    return () => {
+      mounted = false;
+      clearInterval(interval);
+    };
+  }, []);
+
+  const menuItems: Array<{ id: View; label: string; icon: React.ElementType; badge?: string; badgeColor?: string }> = [
+    { id: 'dashboard', label: 'Headquarters', icon: LayoutDashboard },
+    { id: 'leaderboard', label: 'Clan Highscores', icon: Trophy, badge: 'Ranks', badgeColor: 'bg-osrs-rune/15 text-osrs-rune border-osrs-rune/30' },
+    { id: 'raffles', label: 'Grand Raffles', icon: Sparkles, badge: 'Events', badgeColor: 'bg-osrs-rune/10 text-osrs-rune border-osrs-rune/25' },
+    {
+      id: 'bingo',
+      label: hasActiveBingo ? 'Active Bingo' : 'Bingo Campaign',
+      icon: Grid,
+      badge: hasActiveBingo ? undefined : 'Inactive',
+      badgeColor: 'bg-gray-800/70 text-gray-400 border-gray-700'
+    },
+    { id: 'prices', label: 'GE Price Checker', icon: Coins },
+  ];
 
   const formatDuration = (totalSecs: number) => {
     const days = Math.floor(totalSecs / 86400);

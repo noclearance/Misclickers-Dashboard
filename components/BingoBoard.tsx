@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { 
   getBingoTiles, 
+  getClanNow,
   getClanMembers, 
   completeBingoTile, 
   resetBingoTile, 
@@ -23,6 +24,8 @@ export const BingoBoard: React.FC<BingoBoardProps> = ({ mode }) => {
   const [clanMembers, setClanMembers] = useState<ClanMember[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+  const [isBingoActive, setIsBingoActive] = useState<boolean>(false);
+  const [campaignTitle, setCampaignTitle] = useState<string>('Active Bingo Campaign');
   const [selectedTile, setSelectedTile] = useState<BingoTile | null>(null);
   const [completingMember, setCompletingMember] = useState<string>('');
   const [proofUrl, setProofUrl] = useState<string>('');
@@ -33,14 +36,24 @@ export const BingoBoard: React.FC<BingoBoardProps> = ({ mode }) => {
   // Fetch live board and member data from Venny bot backend API
   const loadBingoData = async () => {
     try {
-      const [tiles, members] = await Promise.all([
+      const [clanNow, tiles, members] = await Promise.all([
+        getClanNow(),
         getBingoTiles(),
         getClanMembers()
       ]);
-      setBoardTiles(tiles);
+      const activeBingo = clanNow?.bingo || null;
+      setIsBingoActive(Boolean(activeBingo));
+      setCampaignTitle(activeBingo?.title || 'Active Bingo Campaign');
+      setBoardTiles(activeBingo ? tiles : []);
       setClanMembers(members);
+      if (!activeBingo) {
+        setSelectedTile(null);
+      }
     } catch (err) {
       console.error("[BingoBoard] Error fetching live bingo board from backend:", err);
+      setIsBingoActive(false);
+      setBoardTiles([]);
+      setSelectedTile(null);
     } finally {
       setLoading(false);
       setIsRefreshing(false);
@@ -123,6 +136,31 @@ export const BingoBoard: React.FC<BingoBoardProps> = ({ mode }) => {
     return <BingoBoardSkeleton />;
   }
 
+  if (!isBingoActive) {
+    return (
+      <div id="bingo-view-empty" className="space-y-6 max-w-4xl mx-auto motion-module-enter">
+        <section className="bg-osrs-panel border border-osrs-gold/15 p-6 rounded-2xl shadow-glow-gold relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-osrs-gold/5 rounded-full blur-2xl pointer-events-none"></div>
+          <div className="relative z-10 space-y-3">
+            <span className="text-[10px] uppercase tracking-wider font-mono text-gray-500">Misclickerz Bingo Status</span>
+            <h3 className="text-xl sm:text-2xl font-serif font-black text-gray-150 tracking-wide">No bingo campaign running</h3>
+            <p className="text-xs text-gray-400 max-w-2xl leading-relaxed">
+              Venny reports <code className="text-indigo-300 font-mono text-[11px]">bingo: null</code> from <code className="text-indigo-300 font-mono text-[11px]">/api/clan/now</code>. The board will appear automatically when a campaign is active.
+            </p>
+            <button
+              onClick={handleManualRefresh}
+              disabled={isRefreshing}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-osrs-gold/20 bg-osrs-panelLight/40 text-osrs-gold hover:text-white transition-colors text-xs font-mono font-bold"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <span>Check Again</span>
+            </button>
+          </div>
+        </section>
+      </div>
+    );
+  }
+
   // Calculated variables
   const completedCount = boardTiles.filter(t => t.completedBy).length;
   const progressPercent = boardTiles.length > 0 ? Math.round((completedCount / boardTiles.length) * 100) : 0;
@@ -167,7 +205,7 @@ export const BingoBoard: React.FC<BingoBoardProps> = ({ mode }) => {
           <div className="flex items-center gap-2 flex-wrap">
             <span className="flex items-center gap-1 text-osrs-gold text-xs font-mono font-bold uppercase tracking-wider">
               <Flame className="w-4 h-4 text-osrs-gold animate-pulse" />
-              <span>Misclickerz Summer Campaign</span>
+              <span>{campaignTitle}</span>
             </span>
             <span className="venny-chrome-subtle flex items-center gap-1 text-[9px] font-mono font-bold px-2 py-0.5 rounded-full border">
               <Bot className="w-3 h-3 text-osrs-magic" />

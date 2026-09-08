@@ -117,11 +117,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
   // Bingo campaign calculation
   const completedBingoCount = bingoTiles.filter(t => t.completedBy).length;
-  const totalBingoTiles = bingoTiles.length > 0 ? bingoTiles.length : 25;
+  const totalBingoTiles = bingoTiles.length;
+  const hasActiveBingo = totalBingoTiles > 0;
   const bingoPercent = totalBingoTiles > 0 ? Math.round((completedBingoCount / totalBingoTiles) * 100) : 0;
-  const topBingoRaiders = Array.from(
-    new Set(bingoTiles.filter(t => t.completedBy).map(t => t.completedBy as string))
-  ).slice(0, 3);
+  const topBingoRaiders = hasActiveBingo
+    ? Array.from(new Set(bingoTiles.filter(t => t.completedBy).map(t => t.completedBy as string))).slice(0, 3)
+    : [];
 
   // Active competition info
   const primaryComp = competitions.length > 0 ? competitions[0] : null;
@@ -192,8 +193,17 @@ export const Dashboard: React.FC<DashboardProps> = ({
           </article>
           <article className="bg-osrs-panel border border-osrs-gold/15 rounded-2xl p-4 space-y-1.5">
             <p className="text-[10px] uppercase tracking-wider font-mono text-gray-500">Bingo Progress Peek</p>
-            <p className="text-lg font-serif font-bold text-osrs-gold">{completedBingoCount}/{totalBingoTiles} tiles</p>
-            <p className="text-xs text-gray-400">{bingoPercent}% complete across the clan board.</p>
+            {hasActiveBingo ? (
+              <>
+                <p className="text-lg font-serif font-bold text-osrs-gold">{completedBingoCount}/{totalBingoTiles} tiles</p>
+                <p className="text-xs text-gray-400">{bingoPercent}% complete across the clan board.</p>
+              </>
+            ) : (
+              <>
+                <p className="text-lg font-serif font-bold text-osrs-gold">No active board</p>
+                <p className="text-xs text-gray-400">No bingo campaign running.</p>
+              </>
+            )}
           </article>
           <article className="bg-osrs-panel border border-osrs-gold/15 rounded-2xl p-4 space-y-1.5">
             <p className="text-[10px] uppercase tracking-wider font-mono text-gray-500">Highscore Snapshot</p>
@@ -1064,15 +1074,21 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   <div>
                     <div className="flex items-center gap-2 flex-wrap">
                       <h3 className="font-serif font-black text-base tracking-wider text-gray-100 uppercase">
-                        SUMMER CLAN BINGO 2026
+                        CLAN BINGO CAMPAIGN
                       </h3>
-                      <span className="text-[9px] font-mono font-bold uppercase bg-osrs-rune/15 text-osrs-rune border border-osrs-rune/30 px-2 py-0.5 rounded-full flex items-center gap-1">
+                      <span className={`text-[9px] font-mono font-bold uppercase px-2 py-0.5 rounded-full border flex items-center gap-1 ${
+                        hasActiveBingo
+                          ? 'bg-osrs-rune/15 text-osrs-rune border-osrs-rune/30'
+                          : 'bg-gray-800/70 text-gray-400 border-gray-700'
+                      }`}>
                         <span className="w-1.5 h-1.5 rounded-full bg-osrs-rune"></span>
-                        <span>Venny Bot Synced</span>
+                        <span>{hasActiveBingo ? 'Venny Bot Synced' : 'Inactive'}</span>
                       </span>
                     </div>
                     <p className="text-[11px] text-gray-400 font-mono mt-0.5">
-                      Live clan board progression • Instant tile completions verified via Discord bot
+                      {hasActiveBingo
+                        ? 'Live clan board progression • Instant tile completions verified via Discord bot'
+                        : 'No bingo campaign running right now.'}
                     </p>
                   </div>
                 </div>
@@ -1082,48 +1098,57 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     onClick={onNavigateToBingo}
                     className="flex items-center gap-1.5 bg-osrs-gold hover:bg-osrs-goldHover text-osrs-dark font-sans text-xs font-black px-4 py-2 rounded-xl transition-all shadow-md active:scale-95 shrink-0"
                   >
-                    <span>Open Bingo Board</span>
+                    <span>{hasActiveBingo ? 'Open Bingo Board' : 'View Bingo Status'}</span>
                     <ChevronRight className="w-3.5 h-3.5" />
                   </button>
                 )}
               </div>
 
               {/* Progress bar and metrics */}
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center bg-osrs-dark/70 border border-osrs-gold/10 p-4 rounded-xl">
-                <div className="md:col-span-8 space-y-2">
-                  <div className="flex justify-between items-baseline text-xs font-mono">
-                    <span className="text-gray-400">Board Completion:</span>
-                    <span className="text-osrs-gold font-bold text-sm">
-                      {completedBingoCount} / {totalBingoTiles} Tiles ({bingoPercent}%)
-                    </span>
-                  </div>
-                  <div className="w-full bg-osrs-panel h-2.5 rounded-full overflow-hidden border border-gray-800">
-                    <div
-                      className="h-full bg-gradient-to-r from-amber-500 via-yellow-400 to-emerald-400 rounded-full transition-all duration-500"
-                      style={{ width: `${Math.max(4, bingoPercent)}%` }}
-                    ></div>
-                  </div>
-                  <div className="flex items-center justify-between text-[10px] text-gray-500 font-mono">
-                    <span>{totalBingoTiles - completedBingoCount} Remaining</span>
-                    <span>25-Tile Clan Matrix</span>
-                  </div>
-                </div>
-
-                <div className="md:col-span-4 border-t md:border-t-0 md:border-l border-gray-850 pt-3 md:pt-0 md:pl-4 space-y-1">
-                  <span className="text-[10px] uppercase font-mono font-bold text-gray-400 block">Top Contributors</span>
-                  {topBingoRaiders.length > 0 ? (
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      {topBingoRaiders.map((raider, idx) => (
-                        <span key={idx} className="text-[10px] font-mono bg-osrs-panel border border-osrs-gold/20 text-osrs-gold px-2 py-0.5 rounded-md">
-                          @{raider}
-                        </span>
-                      ))}
+              {hasActiveBingo ? (
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center bg-osrs-dark/70 border border-osrs-gold/10 p-4 rounded-xl">
+                  <div className="md:col-span-8 space-y-2">
+                    <div className="flex justify-between items-baseline text-xs font-mono">
+                      <span className="text-gray-400">Board Completion:</span>
+                      <span className="text-osrs-gold font-bold text-sm">
+                        {completedBingoCount} / {totalBingoTiles} Tiles ({bingoPercent}%)
+                      </span>
                     </div>
-                  ) : (
-                    <span className="text-[10px] font-mono text-gray-500">No tiles claimed yet</span>
-                  )}
+                    <div className="w-full bg-osrs-panel h-2.5 rounded-full overflow-hidden border border-gray-800">
+                      <div
+                        className="h-full bg-gradient-to-r from-amber-500 via-yellow-400 to-emerald-400 rounded-full transition-all duration-500"
+                        style={{ width: `${Math.max(4, bingoPercent)}%` }}
+                      ></div>
+                    </div>
+                    <div className="flex items-center justify-between text-[10px] text-gray-500 font-mono">
+                      <span>{totalBingoTiles - completedBingoCount} Remaining</span>
+                      <span>{totalBingoTiles}-Tile Campaign Board</span>
+                    </div>
+                  </div>
+
+                  <div className="md:col-span-4 border-t md:border-t-0 md:border-l border-gray-850 pt-3 md:pt-0 md:pl-4 space-y-1">
+                    <span className="text-[10px] uppercase font-mono font-bold text-gray-400 block">Top Contributors</span>
+                    {topBingoRaiders.length > 0 ? (
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        {topBingoRaiders.map((raider, idx) => (
+                          <span key={idx} className="text-[10px] font-mono bg-osrs-panel border border-osrs-gold/20 text-osrs-gold px-2 py-0.5 rounded-md">
+                            @{raider}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <span className="text-[10px] font-mono text-gray-500">No tiles claimed yet</span>
+                    )}
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="bg-osrs-dark/70 border border-dashed border-gray-800 p-4 rounded-xl">
+                  <p className="text-xs text-gray-300 font-semibold">No bingo campaign running.</p>
+                  <p className="text-[11px] text-gray-500 font-mono mt-1">
+                    HQ follows the clan/now contract and only shows a board when Venny reports an active campaign.
+                  </p>
+                </div>
+              )}
             </section>
           )}
 

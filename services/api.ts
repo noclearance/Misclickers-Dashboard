@@ -9,7 +9,8 @@ import type {
   BotEventPayload,
   BotRewardAnnouncement,
   OsrsItem,
-  DiscordMemberRoleResolution
+  DiscordMemberRoleResolution,
+  ClanNowSnapshot
 } from '../types';
 import {
   http,
@@ -111,6 +112,13 @@ export async function getClanInfo(): Promise<ClanInfo> {
 }
 
 /**
+ * Fetches current clan state from Venny bridge, including active|null bingo contract.
+ */
+export async function getClanNow(): Promise<ClanNowSnapshot> {
+  return http.get<ClanNowSnapshot>('/api/clan/now');
+}
+
+/**
  * Triggers a live sync of the clan roster and metrics from Wise Old Man Group #24942
  */
 export async function syncClanWithWom(): Promise<{
@@ -170,7 +178,7 @@ export async function enterRaffle(
 // ============================================================================
 
 /**
- * Fetches all 25 tiles of the active clan bingo board
+ * Fetches tiles for the active clan bingo board (empty when inactive)
  */
 export async function getBingoTiles(): Promise<BingoTile[]> {
   return http.get<BingoTile[]>('/api/bingo');
@@ -500,6 +508,7 @@ const VennyApi = {
   getPlayerRankingById,
   syncPlayerRankings,
   getClanInfo,
+  getClanNow,
   syncClanWithWom,
   // Raffles
   getRaffleStatuses,
