@@ -1218,15 +1218,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
                         ? 'bg-amber-700/15 border-amber-700/30 text-amber-500'
                         : 'bg-osrs-dark/80 border-gray-850 text-gray-400';
 
-                    // Comical custom rank tags based on score/points
-                    const getCustomRank = (pts: number) => {
-                      if (pts >= 11000) return 'Grandmaster Misclicker';
-                      if (pts >= 9000) return 'Expert Tile Clipper';
-                      if (pts >= 7000) return 'Brew Chugging Hero';
-                      if (pts >= 5000) return 'Slayer Choke Rookie';
-                      return 'Tile Skipper';
-                    };
-
                     return (
                       <div
                         key={member.id}
@@ -1249,7 +1240,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                               )}
                             </div>
                             <div className="text-[8px] text-osrs-gold/60 font-mono uppercase tracking-wider font-bold truncate">
-                              {getCustomRank(member.clanPoints)}
+                              {member.role || 'Member'}
                             </div>
                           </div>
                         </div>
