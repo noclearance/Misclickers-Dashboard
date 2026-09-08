@@ -19,7 +19,7 @@ import { useGlobalLoading } from '../context/GlobalLoadingProvider';
 import { LeaderboardTableSkeleton } from './skeletons/LeaderboardTableSkeleton';
 
 type MetricKey = 'clanPoints' | 'xpGained' | 'bossKc' | 'ehb' | 'ehp';
-type MetricCategory = 'all' | 'points' | 'xp' | 'boss' | 'efficiency';
+type MetricCategory = 'all' | 'local' | 'xp' | 'boss' | 'efficiency';
 
 interface MetricDef {
   id: MetricKey;
@@ -29,11 +29,11 @@ interface MetricDef {
 }
 
 const METRICS: MetricDef[] = [
-  { id: 'clanPoints', label: 'Clan Points', icon: '🏆', category: 'points' },
   { id: 'xpGained', label: 'Total XP', icon: '⚡', category: 'xp' },
   { id: 'bossKc', label: 'Boss KC', icon: '💀', category: 'boss' },
   { id: 'ehb', label: 'EHB', icon: '📈', category: 'efficiency' },
-  { id: 'ehp', label: 'EHP', icon: '🧠', category: 'efficiency' }
+  { id: 'ehp', label: 'EHP', icon: '🧠', category: 'efficiency' },
+  { id: 'clanPoints', label: 'Hub Points (local)', icon: '🏆', category: 'local' }
 ];
 
 const roleBadgeClass = (role: string): string => {
@@ -67,7 +67,7 @@ const getMetricValue = (member: ClanMember, metricId: MetricKey): number => {
 const getMetricValueString = (member: ClanMember, metricId: MetricKey): string => {
   const value = getMetricValue(member, metricId);
   if (metricId === 'xpGained') return `${(value / 1_000_000).toFixed(2)}M XP`;
-  if (metricId === 'clanPoints') return `${value.toLocaleString()} PTS`;
+  if (metricId === 'clanPoints') return `${value.toLocaleString()} LOCAL PTS`;
   if (metricId === 'ehb' || metricId === 'ehp') return value.toFixed(2);
   return `${value.toLocaleString()} KC`;
 };
@@ -83,7 +83,7 @@ export const ClanLeaderboard: React.FC = () => {
   const [members, setMembers] = useState<ClanMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedMetric, setSelectedMetric] = useState<MetricKey>('clanPoints');
+  const [selectedMetric, setSelectedMetric] = useState<MetricKey>('xpGained');
   const [activeTab, setActiveTab] = useState<MetricCategory>('all');
   const [selectedMember, setSelectedMember] = useState<ClanMember | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -161,7 +161,7 @@ export const ClanLeaderboard: React.FC = () => {
               </a>
             </div>
             <p className="text-xs text-gray-400 mt-0.5">
-              Live roster and metrics synced directly from Wise Old Man Group #{REAL_WOM_GROUP_ID}.
+              Live roster and WOM metrics from Wise Old Man Group #{REAL_WOM_GROUP_ID}; hub-local points are shown separately.
             </p>
           </div>
         </div>
@@ -214,10 +214,10 @@ export const ClanLeaderboard: React.FC = () => {
           <div className="bg-osrs-dark p-1 rounded-xl border border-osrs-gold/10 grid grid-cols-5 gap-1 text-[9px] font-mono">
             {[
               { id: 'all', label: 'All' },
-              { id: 'points', label: 'Pts' },
               { id: 'xp', label: 'XP' },
               { id: 'boss', label: 'Boss' },
-              { id: 'efficiency', label: 'Eff' }
+              { id: 'efficiency', label: 'Eff' },
+              { id: 'local', label: 'Local' }
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -259,6 +259,9 @@ export const ClanLeaderboard: React.FC = () => {
                 {selectedMetric === metric.id && <Sparkles className="w-3 h-3 text-osrs-gold animate-pulse shrink-0 ml-1" />}
               </button>
             ))}
+            <p className="text-[9px] text-gray-500 font-mono px-2 pt-1">
+              Hub Points are local dashboard values, not Venny guild credits.
+            </p>
           </div>
 
           <div className="relative">
@@ -409,7 +412,7 @@ export const ClanLeaderboard: React.FC = () => {
 
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-center">
               <div className="bg-osrs-dark/50 border border-osrs-gold/5 p-2.5 rounded-xl space-y-1">
-                <span className="text-[9px] font-mono text-gray-500 uppercase block">Clan Points</span>
+                <span className="text-[9px] font-mono text-gray-500 uppercase block">Hub Points (Local)</span>
                 <span className="text-xs font-mono font-bold text-osrs-gold">{(selectedMember.clanPoints || 0).toLocaleString()}</span>
               </div>
               <div className="bg-osrs-dark/50 border border-osrs-gold/5 p-2.5 rounded-xl space-y-1">
