@@ -64,7 +64,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
   // Filters & Interactivity State
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [sortBy, setSortBy] = useState<'clanPoints' | 'xpGained' | 'bossKc'>('xpGained');
+  const [sortBy, setSortBy] = useState<'xpGained' | 'bossKc' | 'ehb'>('xpGained');
 
   // Misclick Logger Form State
   const [newIncidentMember, setNewIncidentMember] = useState<string>('');
@@ -1181,19 +1181,16 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     Boss KC
                   </button>
                   <button
-                    onClick={() => setSortBy('clanPoints')}
+                    onClick={() => setSortBy('ehb')}
                     className={`py-1.5 rounded-lg text-[9px] uppercase font-mono transition-all font-bold ${
-                      sortBy === 'clanPoints' 
+                      sortBy === 'ehb' 
                         ? 'bg-osrs-panelLight border border-osrs-gold/25 text-osrs-gold shadow-glow-gold' 
                         : 'text-gray-500 hover:text-gray-300 border-transparent'
                     }`}
                   >
-                    Hub Pts
+                    EHB
                   </button>
                 </div>
-                <p className="text-[9px] text-gray-500 font-mono">
-                  Hub Pts are local to this dashboard and not Venny guild credits.
-                </p>
               </div>
 
               {/* Members Scroll list */}
@@ -1206,11 +1203,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   filteredMembers.map((member, idx) => {
                     // Formatting values
                     const metricLabel = 
-                      sortBy === 'clanPoints' 
-                        ? `${member.clanPoints.toLocaleString()} local pts`
-                        : sortBy === 'xpGained'
+                      sortBy === 'xpGained'
                         ? `${((member.xpGained || 0) / 1_000_000).toFixed(1)}M XP`
-                        : `${(member.bossKc || 0).toLocaleString()} KC`;
+                        : sortBy === 'bossKc'
+                        ? `${(member.bossKc || 0).toLocaleString()} KC`
+                        : `${(member.ehb || 0).toFixed(2)} EHB`;
 
                     const placeBg = 
                       idx === 0 

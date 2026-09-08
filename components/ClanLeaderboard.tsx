@@ -18,8 +18,8 @@ import { getClanInfo, getClanMembers, REAL_WOM_GROUP_ID, syncClanFromWom } from 
 import { useGlobalLoading } from '../context/GlobalLoadingProvider';
 import { LeaderboardTableSkeleton } from './skeletons/LeaderboardTableSkeleton';
 
-type MetricKey = 'clanPoints' | 'xpGained' | 'bossKc' | 'ehb' | 'ehp';
-type MetricCategory = 'all' | 'local' | 'xp' | 'boss' | 'efficiency';
+type MetricKey = 'xpGained' | 'bossKc' | 'ehb' | 'ehp';
+type MetricCategory = 'all' | 'xp' | 'boss' | 'efficiency';
 
 interface MetricDef {
   id: MetricKey;
@@ -32,8 +32,7 @@ const METRICS: MetricDef[] = [
   { id: 'xpGained', label: 'Total XP', icon: '⚡', category: 'xp' },
   { id: 'bossKc', label: 'Boss KC', icon: '💀', category: 'boss' },
   { id: 'ehb', label: 'EHB', icon: '📈', category: 'efficiency' },
-  { id: 'ehp', label: 'EHP', icon: '🧠', category: 'efficiency' },
-  { id: 'clanPoints', label: 'Hub Points (local)', icon: '🏆', category: 'local' }
+  { id: 'ehp', label: 'EHP', icon: '🧠', category: 'efficiency' }
 ];
 
 const roleBadgeClass = (role: string): string => {
@@ -49,8 +48,6 @@ const roleBadgeClass = (role: string): string => {
 
 const getMetricValue = (member: ClanMember, metricId: MetricKey): number => {
   switch (metricId) {
-    case 'clanPoints':
-      return member.clanPoints || 0;
     case 'xpGained':
       return member.xpGained || 0;
     case 'bossKc':
@@ -67,7 +64,6 @@ const getMetricValue = (member: ClanMember, metricId: MetricKey): number => {
 const getMetricValueString = (member: ClanMember, metricId: MetricKey): string => {
   const value = getMetricValue(member, metricId);
   if (metricId === 'xpGained') return `${(value / 1_000_000).toFixed(2)}M XP`;
-  if (metricId === 'clanPoints') return `${value.toLocaleString()} LOCAL PTS`;
   if (metricId === 'ehb' || metricId === 'ehp') return value.toFixed(2);
   return `${value.toLocaleString()} KC`;
 };
@@ -161,7 +157,7 @@ export const ClanLeaderboard: React.FC = () => {
               </a>
             </div>
             <p className="text-xs text-gray-400 mt-0.5">
-              Live roster and WOM metrics from Wise Old Man Group #{REAL_WOM_GROUP_ID}; hub-local points are shown separately.
+              Live roster and WOM metrics synced directly from Wise Old Man Group #{REAL_WOM_GROUP_ID}.
             </p>
           </div>
         </div>
@@ -211,13 +207,12 @@ export const ClanLeaderboard: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
         <div className="lg:col-span-1 space-y-4">
-          <div className="bg-osrs-dark p-1 rounded-xl border border-osrs-gold/10 grid grid-cols-5 gap-1 text-[9px] font-mono">
+          <div className="bg-osrs-dark p-1 rounded-xl border border-osrs-gold/10 grid grid-cols-4 gap-1 text-[9px] font-mono">
             {[
               { id: 'all', label: 'All' },
               { id: 'xp', label: 'XP' },
               { id: 'boss', label: 'Boss' },
-              { id: 'efficiency', label: 'Eff' },
-              { id: 'local', label: 'Local' }
+              { id: 'efficiency', label: 'Eff' }
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -259,9 +254,6 @@ export const ClanLeaderboard: React.FC = () => {
                 {selectedMetric === metric.id && <Sparkles className="w-3 h-3 text-osrs-gold animate-pulse shrink-0 ml-1" />}
               </button>
             ))}
-            <p className="text-[9px] text-gray-500 font-mono px-2 pt-1">
-              Hub Points are local dashboard values, not Venny guild credits.
-            </p>
           </div>
 
           <div className="relative">
@@ -410,11 +402,7 @@ export const ClanLeaderboard: React.FC = () => {
               </button>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-center">
-              <div className="bg-osrs-dark/50 border border-osrs-gold/5 p-2.5 rounded-xl space-y-1">
-                <span className="text-[9px] font-mono text-gray-500 uppercase block">Hub Points (Local)</span>
-                <span className="text-xs font-mono font-bold text-osrs-gold">{(selectedMember.clanPoints || 0).toLocaleString()}</span>
-              </div>
+            <div className="grid grid-cols-2 md:grid-cols-2 gap-3 text-center">
               <div className="bg-osrs-dark/50 border border-osrs-gold/5 p-2.5 rounded-xl space-y-1">
                 <span className="text-[9px] font-mono text-gray-500 uppercase block">Total XP</span>
                 <span className="text-xs font-mono font-bold text-white">{((selectedMember.xpGained || 0) / 1_000_000).toFixed(2)}M</span>
