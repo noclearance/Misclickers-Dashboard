@@ -91,6 +91,22 @@ export interface BingoTile {
   id: number;
   task: string;
   completedBy?: string; // Username of member who completed it
+  completedAt?: string;
+  proofUrl?: string;
+}
+
+export interface BingoCampaign {
+  id: string | number | null;
+  title: string;
+  status: 'active';
+  tiles: BingoTile[];
+}
+
+export interface ClanNowSnapshot {
+  bingo: BingoCampaign | null;
+  source: string;
+  fetchedAt: string;
+  error?: string;
 }
 
 export interface OsrsItem {

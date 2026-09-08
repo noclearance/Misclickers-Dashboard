@@ -8,6 +8,8 @@ const VENNY_SECRET = process.env.VENNY_API_KEY || 'configured-secret';
 const WOM_GROUP_ID = Number(process.env.WOM_GROUP_ID) || 24942; // Misclickerz
 const WOM_API_KEY = process.env.WOM_API_KEY || process.env.WISEOLDMAN_API_KEY || '';
 const VENNY_HEALTH_URL = 'https://grazybot.onrender.com/health';
+const VENNY_CLAN_NOW_URL = process.env.VENNY_CLAN_NOW_URL?.trim() || `${new URL(VENNY_HEALTH_URL).origin}/api/clan/now`;
+const CLAN_NOW_CACHE_MS = Number(process.env.CLAN_NOW_CACHE_MS) || 30_000;
 const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN?.trim() || '';
 const DISCORD_GUILD_ID = process.env.DISCORD_GUILD_ID?.trim() || '';
 
@@ -301,36 +303,6 @@ const state: ServerState = {
       discordEmbedColor: '#10b981',
       proofMessageUrl: 'https://discord.com/channels/109876543210987654/109876543210987655/123456791'
     },
-    {
-      id: 'rew-bingo-1',
-      competitionTitle: 'Summer Clan Bingo 2026',
-      eventType: 'Bingo',
-      title: '🎯 25-Tile Clan Bingo Bounty Board Activated',
-      prizePool: '12,000,000 GP + 5,000 Guild Credits Pool',
-      firstPlace: {
-        gp: '12,000,000 GP',
-        points: 5000,
-        roleReward: '🌟 Bingo Grandmaster',
-        itemReward: '12M GP + 5,000 Guild Credits + Special Discord Flair'
-      },
-      secondPlace: {
-        gp: '6,000,000 GP',
-        points: 3000,
-        roleReward: '⭐ Tile Sweeper'
-      },
-      thirdPlace: {
-        gp: '3,000,000 GP',
-        points: 1000,
-        roleReward: '✨ Line Buster'
-      },
-      sponsor: 'Clan Leadership Council',
-      discordChannel: '#events',
-      announcedBy: 'Venny Discord Bot',
-      timestamp: 'Active Now',
-      active: true,
-      discordEmbedColor: '#8b5cf6',
-      proofMessageUrl: 'https://discord.com/channels/109876543210987654/109876543210987655/123456792'
-    }
   ],
   activities: [
     {
@@ -384,39 +356,7 @@ const state: ServerState = {
     }
   ],
   raffles: [],
-  bingoTiles: [
-    { task: "Get a Vorkath head", completedBy: "Mag84", completedAt: "Yesterday", proofUrl: "https://discord.com/channels/109876543210987654/109876543210987655/123456799" },
-    { task: "Complete Tombs of Amascut", completedBy: "Inwarth", completedAt: "2 days ago", proofUrl: "https://discord.com/channels/109876543210987654/109876543210987655/123456800" },
-    { task: "Obtain a Dragon pickaxe", completedBy: "elf hart IM", completedAt: "3 days ago", proofUrl: "https://discord.com/channels/109876543210987654/109876543210987655/123456801" },
-    { task: "Defeat Zulrah 10 times", completedBy: "thuggerszn", completedAt: "1 day ago", proofUrl: "https://discord.com/channels/109876543210987654/109876543210987655/123456802" },
-    { task: "Craft 1000 blood runes", completedBy: undefined, completedAt: undefined, proofUrl: undefined },
-    { task: "Obtain a piece of Barrows armor", completedBy: "Knuckers", completedAt: "Yesterday", proofUrl: "https://discord.com/channels/109876543210987654/109876543210987655/123456803" },
-    { task: "Get a pet drop", completedBy: "Sorgini", completedAt: "4 days ago", proofUrl: "https://discord.com/channels/109876543210987654/109876543210987655/123456804" },
-    { task: "Complete a Master clue scroll", completedBy: undefined, completedAt: undefined, proofUrl: undefined },
-    { task: "Achieve 99 Strength", completedBy: "Mag84", completedAt: "3 days ago", proofUrl: "https://discord.com/channels/109876543210987654/109876543210987655/123456805" },
-    { task: "Obtain full graceful", completedBy: "eirikurgim", completedAt: "5 days ago", proofUrl: "https://discord.com/channels/109876543210987654/109876543210987655/123456806" },
-    { task: "Cook 500 sharks", completedBy: undefined, completedAt: undefined, proofUrl: undefined },
-    { task: "Defeat the Kalphite Queen", completedBy: "Teejster", completedAt: "2 days ago", proofUrl: "https://discord.com/channels/109876543210987654/109876543210987655/123456807" },
-    { task: "Obtain a Fire Cape", completedBy: "Inwarth", completedAt: "6 days ago", proofUrl: "https://discord.com/channels/109876543210987654/109876543210987655/123456808" },
-    { task: "Complete Song of the Elves", completedBy: undefined, completedAt: undefined, proofUrl: undefined },
-    { task: "Smith an Adamant platebody", completedBy: undefined, completedAt: undefined, proofUrl: undefined },
-    { task: "Obtain a Jar of dirt", completedBy: undefined, completedAt: undefined, proofUrl: undefined },
-    { task: "Complete 100 Slayer tasks", completedBy: "trambecknare", completedAt: "4 days ago", proofUrl: "https://discord.com/channels/109876543210987654/109876543210987655/123456809" },
-    { task: "Fletch 1000 magic longbows", completedBy: undefined, completedAt: undefined, proofUrl: undefined },
-    { task: "Get a Dragon Warhammer", completedBy: undefined, completedAt: undefined, proofUrl: undefined },
-    { task: "Defeat all God Wars Dungeon bosses", completedBy: "lord greeny", completedAt: "2 days ago", proofUrl: "https://discord.com/channels/109876543210987654/109876543210987655/123456810" },
-    { task: "Obtain full Void Knight equipment", completedBy: undefined, completedAt: undefined, proofUrl: undefined },
-    { task: "Obtain a Dragon full helm", completedBy: undefined, completedAt: undefined, proofUrl: undefined },
-    { task: "Complete the Fremennik Exiles", completedBy: "TravelerX", completedAt: "Yesterday", proofUrl: "https://discord.com/channels/109876543210987654/109876543210987655/123456811" },
-    { task: "Obtain a Trident of the seas", completedBy: undefined, completedAt: undefined, proofUrl: undefined },
-    { task: "Reach total level 2000", completedBy: "Inwarth", completedAt: "1 week ago", proofUrl: "https://discord.com/channels/109876543210987654/109876543210987655/123456812" }
-  ].map((item, i) => ({
-    id: i + 1,
-    task: item.task,
-    completedBy: item.completedBy,
-    completedAt: item.completedAt,
-    proofUrl: item.proofUrl
-  }))
+  bingoTiles: []
 };
 
 // Helper: Format WOM roles into clean human labels
@@ -427,6 +367,176 @@ interface VennyBridgeHealth {
   detail: string;
   checkedAt: string;
   source: string;
+}
+
+interface ActiveBingoSnapshot {
+  id: string | number | null;
+  title: string;
+  status: 'active';
+  tiles: ServerState['bingoTiles'];
+}
+
+interface ClanNowSnapshot {
+  bingo: ActiveBingoSnapshot | null;
+  source: string;
+  fetchedAt: string;
+  error?: string;
+}
+
+let cachedClanNow: ClanNowSnapshot = {
+  bingo: null,
+  source: VENNY_CLAN_NOW_URL,
+  fetchedAt: new Date(0).toISOString()
+};
+let lastClanNowFetchMs = 0;
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return null;
+  }
+  return value as Record<string, unknown>;
+}
+
+function coerceString(value: unknown): string | undefined {
+  return typeof value === 'string' && value.trim() ? value.trim() : undefined;
+}
+
+function toTileId(value: unknown, fallback: number): number {
+  if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
+    return value;
+  }
+  const parsed = Number(value);
+  if (Number.isFinite(parsed) && parsed > 0) {
+    return parsed;
+  }
+  return fallback;
+}
+
+function normalizeBingoTiles(rawTiles: unknown): ServerState['bingoTiles'] {
+  if (!Array.isArray(rawTiles)) {
+    return [];
+  }
+
+  const normalized = rawTiles.map((tileEntry, idx) => {
+    if (typeof tileEntry === 'string') {
+      const task = tileEntry.trim();
+      if (!task) return null;
+      return { id: idx + 1, task };
+    }
+
+    const tile = asRecord(tileEntry);
+    if (!tile) return null;
+
+    const task = coerceString(tile.task) || coerceString(tile.title) || coerceString(tile.objective) || coerceString(tile.name);
+    if (!task) return null;
+
+    const completedBy =
+      coerceString(tile.completedBy) ||
+      coerceString(tile.completed_by) ||
+      coerceString(tile.claimedBy) ||
+      coerceString(tile.claimed_by) ||
+      coerceString(tile.username);
+
+    return {
+      id: toTileId(tile.id ?? tile.tileId ?? tile.tile_id, idx + 1),
+      task,
+      completedBy,
+      completedAt:
+        coerceString(tile.completedAt) ||
+        coerceString(tile.completed_at) ||
+        coerceString(tile.claimedAt) ||
+        coerceString(tile.claimed_at),
+      proofUrl:
+        coerceString(tile.proofUrl) ||
+        coerceString(tile.proof_url) ||
+        coerceString(tile.evidenceUrl) ||
+        coerceString(tile.evidence_url)
+    };
+  });
+
+  return normalized.filter((tile) => Boolean(tile)) as ServerState['bingoTiles'];
+}
+
+function extractActiveBingoSnapshot(payload: unknown): ActiveBingoSnapshot | null {
+  const root = asRecord(payload);
+  const bingo = root ? asRecord(root.bingo) : null;
+  if (!bingo) {
+    return null;
+  }
+
+  const status = coerceString(bingo.status)?.toLowerCase();
+  if (status !== 'active') {
+    return null;
+  }
+
+  const rawTiles = bingo.tiles ?? bingo.board ?? bingo.tasks;
+
+  return {
+    id: (typeof bingo.id === 'string' || typeof bingo.id === 'number')
+      ? bingo.id
+      : (typeof bingo.campaignId === 'string' || typeof bingo.campaignId === 'number') ? bingo.campaignId : null,
+    title: coerceString(bingo.title) || coerceString(bingo.name) || 'Misclickerz Bingo Campaign',
+    status: 'active',
+    tiles: normalizeBingoTiles(rawTiles)
+  };
+}
+
+async function fetchVennyClanNowPayload(): Promise<unknown> {
+  const response = await fetch(VENNY_CLAN_NOW_URL, {
+    headers: {
+      'Accept': 'application/json',
+      'Authorization': `Bearer ${VENNY_SECRET}`,
+      'X-Venny-Secret': VENNY_SECRET,
+      'x-api-key': VENNY_SECRET
+    },
+    signal: AbortSignal.timeout(7000)
+  });
+
+  if (!response.ok) {
+    throw new Error(`clan/now returned ${response.status}`);
+  }
+
+  const rawBody = await response.text();
+  if (!rawBody.trim()) {
+    return {};
+  }
+
+  try {
+    return JSON.parse(rawBody);
+  } catch {
+    throw new Error('clan/now returned non-JSON data');
+  }
+}
+
+async function getClanNowSnapshot(options: { force?: boolean } = {}): Promise<ClanNowSnapshot> {
+  const shouldUseCache = !options.force && (Date.now() - lastClanNowFetchMs) < CLAN_NOW_CACHE_MS;
+  if (shouldUseCache) {
+    return cachedClanNow;
+  }
+
+  try {
+    const payload = await fetchVennyClanNowPayload();
+    const activeBingo = extractActiveBingoSnapshot(payload);
+    state.bingoTiles = activeBingo?.tiles || [];
+
+    cachedClanNow = {
+      bingo: activeBingo ? { ...activeBingo, tiles: state.bingoTiles } : null,
+      source: VENNY_CLAN_NOW_URL,
+      fetchedAt: new Date().toISOString()
+    };
+  } catch (error: any) {
+    state.bingoTiles = [];
+    cachedClanNow = {
+      bingo: null,
+      source: VENNY_CLAN_NOW_URL,
+      fetchedAt: new Date().toISOString(),
+      error: error?.message || 'Failed to fetch clan/now'
+    };
+    console.warn(`[Venny clan/now] ${cachedClanNow.error}`);
+  }
+
+  lastClanNowFetchMs = Date.now();
+  return cachedClanNow;
 }
 
 function formatWomRole(role: string): string {
@@ -1129,6 +1239,12 @@ async function syncMisclick(username, detail) {
     res.json(state.clanInfo);
   });
 
+  app.get('/api/clan/now', async (req, res) => {
+    const forceRefresh = String(req.query.refresh || '').toLowerCase() === 'true';
+    const snapshot = await getClanNowSnapshot({ force: forceRefresh });
+    res.json(snapshot);
+  });
+
   app.post('/api/clan/sync', async (req, res) => {
     await syncWiseOldManData();
     res.json({ success: true, clanInfo: state.clanInfo, memberCount: state.members.length, competitions: state.competitions });
@@ -1197,11 +1313,17 @@ async function syncMisclick(username, detail) {
   });
 
   // 10. Bingo API
-  app.get('/api/bingo', (req, res) => {
-    res.json(state.bingoTiles);
+  app.get('/api/bingo', async (req, res) => {
+    const snapshot = await getClanNowSnapshot();
+    res.json(snapshot.bingo?.tiles || []);
   });
 
-  app.post('/api/bingo/:id/complete', (req, res) => {
+  app.post('/api/bingo/:id/complete', async (req, res) => {
+    const snapshot = await getClanNowSnapshot();
+    if (!snapshot.bingo) {
+      return res.status(409).json({ error: 'No bingo campaign running' });
+    }
+
     const tileId = Number(req.params.id);
     const { username, proofUrl } = req.body;
     const tile = state.bingoTiles.find(t => t.id === tileId);
@@ -1229,7 +1351,12 @@ async function syncMisclick(username, detail) {
     res.json({ success: true, tile });
   });
 
-  app.post('/api/bingo/:id/reset', (req, res) => {
+  app.post('/api/bingo/:id/reset', async (req, res) => {
+    const snapshot = await getClanNowSnapshot();
+    if (!snapshot.bingo) {
+      return res.status(409).json({ error: 'No bingo campaign running' });
+    }
+
     const tileId = Number(req.params.id);
     const tile = state.bingoTiles.find(t => t.id === tileId);
 
@@ -1365,7 +1492,11 @@ async function syncMisclick(username, detail) {
     
     // Background sync with Wise Old Man Group 24942
     syncWiseOldManData();
+    void getClanNowSnapshot({ force: true });
     setInterval(syncWiseOldManData, 1000 * 60 * 5); // Every 5 minutes
+    setInterval(() => {
+      void getClanNowSnapshot({ force: true });
+    }, 1000 * 30); // Keep /api/clan/now bingo status fresh
   });
 }
 
