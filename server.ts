@@ -3,7 +3,7 @@ import cors from 'cors';
 import path from 'path';
 import { createServer as createViteServer } from 'vite';
 
-const PORT = 3000;
+const PORT = Number(process.env.PORT || 3000);
 const VENNY_SECRET = process.env.VENNY_API_KEY || 'configured-secret';
 const WOM_GROUP_ID = Number(process.env.WOM_GROUP_ID) || 24942; // Misclickerz
 const WOM_API_KEY = process.env.WOM_API_KEY || process.env.WISEOLDMAN_API_KEY || '';
@@ -1481,7 +1481,7 @@ async function syncMisclick(username, detail) {
   } else {
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
-    app.get('*all', (req, res) => {
+    app.get('/{*all}', (req, res) => {
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }
