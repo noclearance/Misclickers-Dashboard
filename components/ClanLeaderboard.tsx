@@ -68,6 +68,12 @@ const getMetricValueString = (member: ClanMember, metricId: MetricKey): string =
   return `${value.toLocaleString()} KC`;
 };
 
+const normalizeClanBrand = (value: string | null | undefined): string => {
+  if (value === 'MISCLICKERSS') return 'MISCLICKERZ';
+  if (value === 'Misclickerss') return 'Misclickerz';
+  return value || 'Misclickerz';
+};
+
 export const ClanLeaderboard: React.FC = () => {
   let globalLoading: ReturnType<typeof useGlobalLoading> | null = null;
   try {
@@ -132,6 +138,8 @@ export const ClanLeaderboard: React.FC = () => {
   });
 
   const activeMetric = METRICS.find((metric) => metric.id === selectedMetric);
+  const displayClanName = normalizeClanBrand(clanInfo?.name);
+  const displayClanChat = normalizeClanBrand(clanInfo?.clanChat);
 
   return (
     <div className="motion-module-enter bg-osrs-panel border border-white/10 rounded-2xl p-4 sm:p-5 shadow-xl flex flex-col min-h-[640px]">
@@ -143,7 +151,7 @@ export const ClanLeaderboard: React.FC = () => {
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <h3 className="font-serif font-black text-lg tracking-wider text-gray-150 uppercase">
-                {clanInfo?.name || 'Misclickerz'} Highscores
+                {displayClanName} Highscores
               </h3>
               <a
                 href={`https://wiseoldman.net/groups/${REAL_WOM_GROUP_ID}`}
@@ -192,7 +200,7 @@ export const ClanLeaderboard: React.FC = () => {
             <Crown className="w-4 h-4 text-amber-400 shrink-0" />
             <div>
               <div className="text-[10px] uppercase font-mono text-gray-400">Clan Chat</div>
-              <div className="text-xs font-bold text-amber-300 font-mono">{clanInfo.clanChat}</div>
+              <div className="text-xs font-bold text-amber-300 font-mono">{displayClanChat}</div>
             </div>
           </div>
           <div className="flex items-center gap-2.5 px-2">
