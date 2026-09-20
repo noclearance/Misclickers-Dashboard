@@ -121,11 +121,11 @@ export const Header: React.FC<HeaderProps> = ({
               <div className="flex items-center gap-2 bg-[#5865F2]/10 border border-[#5865F2]/30 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs transition-all hover:bg-[#5865F2]/15">
                 <img
                   src={discordUser.avatarUrl}
-                  alt={discordUser.username}
+                  alt={(discordUser.globalName && discordUser.globalName.trim()) || discordUser.username}
                   className="w-5 h-5 rounded-full border border-[#5865F2] shrink-0"
                 />
                 <div className="max-w-[70px] sm:max-w-[120px]">
-                  <p className="text-[10px] text-white font-bold truncate leading-tight">@{discordUser.username}</p>
+                  <p className="text-[10px] text-white font-bold truncate leading-tight">{(discordUser.globalName && discordUser.globalName.trim()) || discordUser.username}</p>
                   <span className="text-[8px] text-[#9ca8ff] font-mono block leading-none font-semibold uppercase tracking-wide">
                     Discord
                   </span>
