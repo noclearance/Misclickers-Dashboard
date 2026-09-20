@@ -39,6 +39,7 @@ Set these on the `misclickerz-hub` service (never commit real values):
 4. Copy **Client Secret** (OAuth2 secret, Reset if needed) → Sid sets `DISCORD_CLIENT_SECRET`.
 5. Confirm the bot token already used by the hub stays on `DISCORD_BOT_TOKEN` (unchanged).
 6. Local/dev (optional): also add `http://localhost:3000/auth/discord/callback` and set `DISCORD_REDIRECT_URI` accordingly when testing locally.
+   - Confirmed aligned: `server.ts` listens on `PORT` default **3000**; `vite.config.ts` `server.port` is **3000**; `npm run dev` runs `tsx server.ts`. Only add the localhost redirect in the Discord Portal when you actually need local OAuth testing.
 
 ## Routes
 
@@ -55,11 +56,14 @@ Set these on the `misclickerz-hub` service (never commit real values):
 Callback redirects to `/?auth_error=…`:
 
 - `denied` — user cancelled Discord consent
-- `not_in_guild` — not in Misclickerz guild (or guild lookup failed)
+- `not_in_guild` — Bot lookup returned `not_found` (user not in Misclickerz guild)
+- `verify_failed` — Bot/guild lookup returned `error` (broken bot token/guild env or Discord API failure); UI asks member to retry or ping staff — distinct from true not-in-guild
 - `missing_env` — OAuth/session/bot env incomplete
 - `redirect_mismatch` — Portal redirect URI does not match
 - `state` — CSRF state missing/mismatch
 - `token` — token exchange or `/users/@me` failed
+
+Member-facing modal copy stays soft (no snowflake / identify / httpOnly / Venny app jargon). Tech detail belongs in this doc only.
 
 ## Server wiring note
 
