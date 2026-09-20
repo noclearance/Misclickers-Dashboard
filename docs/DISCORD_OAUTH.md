@@ -60,3 +60,12 @@ Callback redirects to `/?auth_error=…`:
 - `redirect_mismatch` — Portal redirect URI does not match
 - `state` — CSRF state missing/mismatch
 - `token` — token exchange or `/users/@me` failed
+
+## Server wiring note
+
+`server.ts` is wired via `scripts/wire-discord-oauth.mjs` (idempotent). npm `predev` / `prebuild` and Render `buildCommand` run `npm run wire:oauth` so Express gets:
+
+- `cors({ origin: true, credentials: true })`
+- `registerDiscordOAuthRoutes(app, { resolveGuildMemberRoles })`
+
+If you already see those lines in `server.ts`, the script is a no-op.
