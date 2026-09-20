@@ -10,7 +10,7 @@ import { DiscordModal } from './components/DiscordModal';
 import { VennyBotModal } from './components/VennyBotModal';
 import { GlobalLoadingProvider } from './context/GlobalLoadingProvider';
 import { onUnauthorized, UnauthorizedEventDetail } from './services/httpClient';
-import { fetchAuthMe, logoutAuthSession } from './services/api';
+import { fetchAuthMe, logoutAuthSession } from './services/authApi';
 import { ShieldAlert, X, KeyRound } from 'lucide-react';
 import type { DiscordSessionUser, View } from './types';
 import { useHubMode } from './hooks/useHubMode';
@@ -87,35 +87,23 @@ const AppContent: React.FC = () => {
       setAuthError(error);
       setIsDiscordModalOpen(true);
     }
-    if (ok || error) {
-      clearAuthQuery();
-    }
+    if (ok || error) clearAuthQuery();
     void refreshSession();
   }, [refreshSession]);
 
   useEffect(() => {
-    const unsubscribe = onUnauthorized((detail) => {
-      setUnauthorizedError(detail);
-    });
+    const unsubscribe = onUnauthorized((detail) => setUnauthorizedError(detail));
     return () => unsubscribe();
   }, []);
 
   useEffect(() => {
-    if (!isStaff) {
-      setIsVennyModalOpen(false);
-    }
+    if (!isStaff) setIsVennyModalOpen(false);
   }, [isStaff]);
 
-  const openLogin = () => {
-    setIsDiscordModalOpen(true);
-  };
+  const openLogin = () => setIsDiscordModalOpen(true);
 
   const handleDisconnect = async () => {
-    try {
-      await logoutAuthSession();
-    } catch {
-      // still clear local UI state
-    }
+    try { await logoutAuthSession(); } catch { /* still clear UI */ }
     setDiscordUser(null);
     localStorage.removeItem('discord_user');
   };
@@ -133,32 +121,17 @@ const AppContent: React.FC = () => {
           />
         );
       case 'leaderboard':
-        return (
-          <div className="space-y-6">
-            <ClanLeaderboard />
-          </div>
-        );
+        return (<div className="space-y-6"><ClanLeaderboard /></div>);
       case 'raffles':
         return (
           <div className="space-y-6">
-            <RaffleComponent
-              discordUser={discordUser}
-              onConnectClick={openLogin}
-            />
+            <RaffleComponent discordUser={discordUser} onConnectClick={openLogin} />
           </div>
         );
       case 'bingo':
-        return (
-          <div>
-            <BingoBoard mode={hubMode} />
-          </div>
-        );
+        return (<div><BingoBoard mode={hubMode} /></div>);
       case 'prices':
-        return (
-          <div>
-            <PriceChecker />
-          </div>
-        );
+        return (<div><PriceChecker /></div>);
       default:
         return (
           <Dashboard
@@ -184,7 +157,6 @@ const AppContent: React.FC = () => {
         isOpen={isMobileMenuOpen}
         onClose={() => setIsMobileMenuOpen(false)}
       />
-
       <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
         <Header
           clanName="Misclickerz"
@@ -198,7 +170,6 @@ const AppContent: React.FC = () => {
           currentView={currentView}
           onSelectView={setCurrentView}
         />
-
         {unauthorizedError && isStaff && (
           <div id="global-unauthorized-banner" className="bg-rose-950/90 border-b border-rose-500/40 px-4 py-2.5 flex items-center justify-between gap-3 text-xs text-rose-200 animate-fadeIn z-20">
             <div className="flex items-center gap-2.5">
@@ -209,24 +180,16 @@ const AppContent: React.FC = () => {
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <button
-                onClick={() => setIsVennyModalOpen(true)}
-                className="flex items-center gap-1 bg-rose-800/60 hover:bg-rose-700/80 text-rose-100 px-2.5 py-1 rounded text-[11px] font-medium transition-colors border border-rose-500/30"
-              >
+              <button onClick={() => setIsVennyModalOpen(true)} className="flex items-center gap-1 bg-rose-800/60 hover:bg-rose-700/80 text-rose-100 px-2.5 py-1 rounded text-[11px] font-medium transition-colors border border-rose-500/30">
                 <KeyRound className="w-3 h-3" />
                 <span>Configure Key</span>
               </button>
-              <button
-                onClick={() => setUnauthorizedError(null)}
-                className="text-rose-400 hover:text-rose-200 p-1 transition-colors"
-                aria-label="Dismiss unauthorized warning"
-              >
+              <button onClick={() => setUnauthorizedError(null)} className="text-rose-400 hover:text-rose-200 p-1 transition-colors" aria-label="Dismiss unauthorized warning">
                 <X className="w-4 h-4" />
               </button>
             </div>
           </div>
         )}
-
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-osrs-dark p-3.5 sm:p-6 lg:p-8 custom-scrollbar">
           <div key={currentView} className="motion-module-enter">
             {!authReady ? (
@@ -237,32 +200,22 @@ const AppContent: React.FC = () => {
           </div>
         </main>
       </div>
-
       <DiscordModal
         isOpen={isDiscordModalOpen}
-        onClose={() => {
-          setIsDiscordModalOpen(false);
-          setAuthError(null);
-        }}
+        onClose={() => { setIsDiscordModalOpen(false); setAuthError(null); }}
         authError={authError}
       />
-
       {isStaff && (
-        <VennyBotModal
-          isOpen={isVennyModalOpen}
-          onClose={() => setIsVennyModalOpen(false)}
-        />
+        <VennyBotModal isOpen={isVennyModalOpen} onClose={() => setIsVennyModalOpen(false)} />
       )}
     </div>
   );
 };
 
-const App: React.FC = () => {
-  return (
-    <GlobalLoadingProvider minShimmerDuration={400}>
-      <AppContent />
-    </GlobalLoadingProvider>
-  );
-};
+const App: React.FC = () => (
+  <GlobalLoadingProvider minShimmerDuration={400}>
+    <AppContent />
+  </GlobalLoadingProvider>
+);
 
 export default App;
