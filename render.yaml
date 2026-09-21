@@ -2,7 +2,7 @@ services:
   - type: web
     name: misclickerz-hub
     runtime: node
-    buildCommand: npm ci && npm run build
+    buildCommand: npm ci && npm run wire:oauth && npm run build
     startCommand: npm start
     envVars:
       - key: VENNY_API_KEY
@@ -15,6 +15,14 @@ services:
         sync: false
       - key: DISCORD_GUILD_ID
         sync: false
+      - key: DISCORD_CLIENT_ID
+        sync: false
+      - key: DISCORD_CLIENT_SECRET
+        sync: false
+      - key: DISCORD_REDIRECT_URI
+        sync: false
+      - key: SESSION_SECRET
+        generateValue: true
       - key: WOM_GROUP_ID
         sync: false
       - key: WOM_API_KEY
