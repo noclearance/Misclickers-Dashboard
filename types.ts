@@ -161,6 +161,8 @@ export interface BotEventPayload {
 export interface DiscordSessionUser {
   id: string | null;
   username: string;
+  /** Discord display name when present; prefer over username in UI. */
+  globalName?: string | null;
   avatarUrl: string;
   roleIds: string[];
 }

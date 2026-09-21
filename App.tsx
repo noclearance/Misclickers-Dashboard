@@ -18,6 +18,7 @@ import { useHubMode } from './hooks/useHubMode';
 const AUTH_ERROR_KEYS = new Set([
   'denied',
   'not_in_guild',
+  'verify_failed',
   'missing_env',
   'redirect_mismatch',
   'state',
@@ -67,6 +68,7 @@ const AppContent: React.FC = () => {
         setDiscordUser({
           id: me.user.id,
           username: me.user.username,
+          globalName: me.user.globalName ?? null,
           avatarUrl: me.user.avatarUrl,
           roleIds: me.user.roleIds || [],
         });

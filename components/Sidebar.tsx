@@ -254,12 +254,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <div className="flex items-center gap-2 min-w-0">
                   <img 
                     src={discordUser.avatarUrl} 
-                    alt={discordUser.username} 
+                    alt={(discordUser.globalName && discordUser.globalName.trim()) || discordUser.username} 
                     className="w-7 h-7 rounded-full border border-[#5865F2] shrink-0" 
                   />
                   <div className="min-w-0">
                     <div className="text-[10px] text-white font-black truncate">
-                      @{discordUser.username}
+                      {(discordUser.globalName && discordUser.globalName.trim()) || discordUser.username}
                     </div>
                     <span className="text-[8px] text-[#5865F2] font-mono block leading-none font-semibold">Connected</span>
                   </div>

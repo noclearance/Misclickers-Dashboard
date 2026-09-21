@@ -9,13 +9,12 @@ interface DiscordModalProps {
 
 const ERROR_COPY: Record<string, string> = {
   denied: 'Discord authorization was denied. You can try again when ready.',
-  not_in_guild: 'Your Discord account is not a member of the Misclickerz guild.',
-  missing_env:
-    'Hub Discord OAuth is not fully configured (CLIENT_ID / CLIENT_SECRET / SESSION_SECRET / BOT token / GUILD_ID). Ask Sid to set Render env vars.',
-  redirect_mismatch:
-    'OAuth redirect URI mismatch. Caleb must add https://misclickerz-hub.onrender.com/auth/discord/callback on the Venny Discord application.',
-  state: 'Login session expired or state mismatch. Please try Login with Discord again.',
-  token: 'Discord token exchange failed. Check CLIENT_SECRET and redirect URI, then retry.',
+  not_in_guild: "You're not in the Misclickerz Discord.",
+  verify_failed: "We couldn't verify your membership — try again or ping staff.",
+  missing_env: "Discord login isn't fully set up yet. Please try again later or ping staff.",
+  redirect_mismatch: "Discord login isn't configured for this site yet. Please ping staff.",
+  state: 'Login session expired. Please try Login with Discord again.',
+  token: 'Discord login failed. Please try again in a moment.',
   unknown: 'Login failed for an unknown reason. Please try again.',
 };
 
@@ -35,7 +34,7 @@ export const DiscordModal: React.FC<DiscordModalProps> = ({ isOpen, onClose, aut
 
   const handleLogin = () => {
     setStarting(true);
-    // Full navigation so Discord redirect + httpOnly cookie round-trip works
+    // Full navigation so Discord redirect + session cookie round-trip works
     window.location.href = '/auth/discord';
   };
 
@@ -75,7 +74,7 @@ export const DiscordModal: React.FC<DiscordModalProps> = ({ isOpen, onClose, aut
               <div>
                 <h4 className="text-xs font-bold text-white">MISCLICKERZ HUB</h4>
                 <p className="text-[11px] text-gray-400 leading-relaxed mt-0.5">
-                  Sign in with the Misclickerz Venny Discord application. No manual username or snowflake — Discord identity is resolved server-side.
+                  Sign in with Discord to unlock member features. No manual username — we confirm you're in the Misclickerz Discord.
                 </p>
               </div>
             </div>
@@ -83,15 +82,15 @@ export const DiscordModal: React.FC<DiscordModalProps> = ({ isOpen, onClose, aut
             <div className="border-t border-gray-700/60 my-2 pt-2 space-y-1.5 text-[11px] text-gray-300">
               <div className="flex items-center gap-2">
                 <Check className="w-3.5 h-3.5 text-[#23a55a]" />
-                <span>Scope: <code className="text-[10px]">identify</code> only</span>
+                <span>Discord login only — nothing to type</span>
               </div>
               <div className="flex items-center gap-2">
                 <Check className="w-3.5 h-3.5 text-[#23a55a]" />
-                <span>Guild membership checked via hub Bot (not user token)</span>
+                <span>Confirms you're in the Misclickerz Discord</span>
               </div>
               <div className="flex items-center gap-2">
                 <Check className="w-3.5 h-3.5 text-[#23a55a]" />
-                <span>Session stored in an httpOnly cookie</span>
+                <span>Keeps you signed in securely on this device</span>
               </div>
             </div>
           </div>
@@ -99,7 +98,7 @@ export const DiscordModal: React.FC<DiscordModalProps> = ({ isOpen, onClose, aut
           <div className="flex gap-2 text-[10px] text-gray-400 leading-relaxed bg-[#2b2d31]/40 p-2.5 rounded">
             <Lock className="w-4 h-4 text-[#5865F2] shrink-0 mt-0.5" />
             <span>
-              The OAuth client secret never leaves the server. After Discord approves, the hub exchanges the code and resolves your guild roles.
+              Login is handled on the server. After Discord approves, we check your Misclickerz Discord membership and roles.
             </span>
           </div>
 

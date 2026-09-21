@@ -131,7 +131,8 @@ export function registerDiscordOAuthRoutes(
 
     // Guild membership via EXISTING Bot path (not user-token guilds.members.read)
     const guild = await deps.resolveGuildMemberRoles(userId);
-    if (guild.resolution === 'not_found' || guild.resolution === 'error') return fail(res, 'not_in_guild');
+    if (guild.resolution === 'not_found') return fail(res, 'not_in_guild');
+    if (guild.resolution === 'error') return fail(res, 'verify_failed');
     if (guild.resolution === 'unconfigured') return fail(res, 'missing_env');
 
     await optionalVennyVerifyMember(userId);
