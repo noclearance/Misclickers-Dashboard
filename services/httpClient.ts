@@ -58,38 +58,7 @@ export interface UnauthorizedEventDetail {
 
 export type UnauthorizedListener = (detail: UnauthorizedEventDetail) => void;
 
-let runtimeApiKey: string | null = null;
 const unauthorizedListeners = new Set<UnauthorizedListener>();
-
-export const getVennyApiKey = (): string => {
-  if (runtimeApiKey) return runtimeApiKey;
-  try {
-    if (typeof import.meta !== 'undefined' && import.meta.env) {
-      const viteKey = import.meta.env.VITE_VENNY_API_KEY;
-      if (viteKey && String(viteKey).trim()) return String(viteKey).trim();
-    }
-  } catch { /* ignore */ }
-  if (typeof window !== 'undefined' && window.localStorage) {
-    try {
-      const stored = localStorage.getItem('VITE_VENNY_API_KEY') || localStorage.getItem('VENNY_API_KEY');
-      if (stored?.trim()) return stored.trim();
-    } catch { /* ignore */ }
-  }
-  if (typeof process !== 'undefined' && process.env?.VENNY_API_KEY) {
-    return process.env.VENNY_API_KEY;
-  }
-  return '';
-};
-
-export const setVennyApiKey = (key: string | null): void => {
-  runtimeApiKey = key;
-  if (typeof window !== 'undefined' && window.localStorage) {
-    try {
-      if (key) localStorage.setItem('VITE_VENNY_API_KEY', key);
-      else localStorage.removeItem('VITE_VENNY_API_KEY');
-    } catch { /* ignore */ }
-  }
-};
 
 export const onUnauthorized = (listener: UnauthorizedListener): (() => void) => {
   unauthorizedListeners.add(listener);
@@ -134,12 +103,6 @@ export const apiClient: AxiosInstance = axios.create({
 });
 
 apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-  const apiKey = getVennyApiKey();
-  if (apiKey) {
-    config.headers.set('Authorization', `Bearer ${apiKey}`);
-    config.headers.set('X-Venny-Secret', apiKey);
-    config.headers.set('x-api-key', apiKey);
-  }
   const startTime = Date.now();
   (config as any).__startTime = startTime;
   (config as any).__reqId = `req-${startTime}`;

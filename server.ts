@@ -2,16 +2,23 @@ import express, { Request, Response } from 'express';
 import cors from 'cors';
 import path from 'path';
 import { createServer as createViteServer } from 'vite';
+import { registerDiscordOAuthRoutes } from './server/auth/discordOAuth';
+import { readSession } from './server/auth/session';
 
 const PORT = Number(process.env.PORT || 3000);
-const VENNY_SECRET = process.env.VENNY_API_KEY || 'configured-secret';
+const VENNY_SECRET = process.env.VENNY_API_KEY?.trim() || '';
+const VENNY_API_URL = (process.env.VENNY_API_URL?.trim() || 'https://grazybot.onrender.com').replace(/\/+$/, '');
+const VENNY_CLAN_NOW_URL = process.env.VENNY_CLAN_NOW_URL?.trim() || `${VENNY_API_URL}/api/clan/now`;
 const WOM_GROUP_ID = Number(process.env.WOM_GROUP_ID) || 24942; // Misclickerz
 const WOM_API_KEY = process.env.WOM_API_KEY || process.env.WISEOLDMAN_API_KEY || '';
-const VENNY_HEALTH_URL = 'https://grazybot.onrender.com/health';
-const VENNY_CLAN_NOW_URL = process.env.VENNY_CLAN_NOW_URL?.trim() || `${new URL(VENNY_HEALTH_URL).origin}/api/clan/now`;
+const VENNY_HEALTH_URL = `${VENNY_API_URL}/health`;
 const CLAN_NOW_CACHE_MS = Number(process.env.CLAN_NOW_CACHE_MS) || 30_000;
 const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN?.trim() || '';
 const DISCORD_GUILD_ID = process.env.DISCORD_GUILD_ID?.trim() || '';
+const STAFF_ROLE_IDS = (process.env.VITE_STAFF_ROLE_IDS || '')
+  .split(',')
+  .map((roleId) => roleId.trim())
+  .filter(Boolean);
 
 // In-Memory Database State (persisted while server is up, synced with Wise Old Man & Venny bot)
 interface ServerState {
@@ -383,6 +390,50 @@ interface ClanNowSnapshot {
   error?: string;
 }
 
+type AllowedVennyEndpoint = 'health' | 'clanNow';
+interface VennyProxyTarget {
+  url: string;
+  requiresAuth: boolean;
+  accept: string;
+  timeoutMs: number;
+}
+
+const VENNY_PROXY_TARGETS: Record<AllowedVennyEndpoint, VennyProxyTarget> = {
+  health: {
+    url: VENNY_HEALTH_URL,
+    requiresAuth: false,
+    accept: 'application/json, text/plain;q=0.9, */*;q=0.8',
+    timeoutMs: 5000
+  },
+  clanNow: {
+    url: VENNY_CLAN_NOW_URL,
+    requiresAuth: true,
+    accept: 'application/json',
+    timeoutMs: 7000
+  }
+};
+
+async function requestVennyEndpoint(endpoint: AllowedVennyEndpoint): Promise<Response> {
+  const target = VENNY_PROXY_TARGETS[endpoint];
+  const headers: Record<string, string> = {
+    Accept: target.accept
+  };
+
+  if (target.requiresAuth) {
+    if (!VENNY_SECRET) {
+      throw new Error('VENNY_API_KEY is not configured.');
+    }
+    headers.Authorization = `Bearer ${VENNY_SECRET}`;
+    headers['X-Venny-Secret'] = VENNY_SECRET;
+    headers['x-api-key'] = VENNY_SECRET;
+  }
+
+  return fetch(target.url, {
+    headers,
+    signal: AbortSignal.timeout(target.timeoutMs)
+  });
+}
+
 let cachedClanNow: ClanNowSnapshot = {
   bingo: null,
   source: VENNY_CLAN_NOW_URL,
@@ -482,15 +533,7 @@ function extractActiveBingoSnapshot(payload: unknown): ActiveBingoSnapshot | nul
 }
 
 async function fetchVennyClanNowPayload(): Promise<unknown> {
-  const response = await fetch(VENNY_CLAN_NOW_URL, {
-    headers: {
-      'Accept': 'application/json',
-      'Authorization': `Bearer ${VENNY_SECRET}`,
-      'X-Venny-Secret': VENNY_SECRET,
-      'x-api-key': VENNY_SECRET
-    },
-    signal: AbortSignal.timeout(7000)
-  });
+  const response = await requestVennyEndpoint('clanNow');
 
   if (!response.ok) {
     throw new Error(`clan/now returned ${response.status}`);
@@ -608,10 +651,7 @@ function classifyVennyHealth(payload: unknown, responseText: string): VennyHealt
 async function getVennyBridgeHealth(): Promise<VennyBridgeHealth> {
   const checkedAt = new Date().toISOString();
   try {
-    const healthRes = await fetch(VENNY_HEALTH_URL, {
-      headers: { 'Accept': 'application/json, text/plain;q=0.9, */*;q=0.8' },
-      signal: AbortSignal.timeout(5000)
-    });
+    const healthRes = await requestVennyEndpoint('health');
 
     if (!healthRes.ok) {
       return {
@@ -918,38 +958,94 @@ function broadcastEvent(eventName: string, data: any) {
   }
 }
 
-// Authentication middleware for bot endpoints
-function verifyBotSecret(req: Request, res: Response, next: () => void) {
-  const authHeader = req.headers['authorization'];
+function isStaffSession(req: Request): boolean {
+  const session = readSession(req);
+  if (!session) return false;
+  if (STAFF_ROLE_IDS.length === 0) return false;
+  const roleIds = Array.isArray(session.roleIds) ? session.roleIds.map((roleId) => String(roleId).trim()).filter(Boolean) : [];
+  return roleIds.some((roleId) => STAFF_ROLE_IDS.includes(roleId));
+}
+
+function extractBotToken(req: Request): string {
+  const authHeader = req.headers.authorization;
   const customSecret = req.headers['x-venny-secret'] || req.headers['x-api-key'];
-  const querySecret = req.query.key as string;
+  const querySecret = req.query.key as string | undefined;
 
-  const token = authHeader?.startsWith('Bearer ') 
-    ? authHeader.substring(7) 
-    : (customSecret as string) || querySecret;
+  if (typeof authHeader === 'string' && authHeader.startsWith('Bearer ')) {
+    return authHeader.slice(7).trim();
+  }
+  if (typeof customSecret === 'string') {
+    return customSecret.trim();
+  }
+  if (typeof querySecret === 'string') {
+    return querySecret.trim();
+  }
+  return '';
+}
 
-  // If a secret is defined in environment or default, verify
-  if (token && (token === VENNY_SECRET || token === 'venny-dev-token')) {
+function hasValidBotToken(token: string): boolean {
+  if (!token) return false;
+  if (VENNY_SECRET && token === VENNY_SECRET) return true;
+  return process.env.NODE_ENV !== 'production' && token === 'venny-dev-token';
+}
+
+function verifyHubSession(req: Request, res: Response, next: () => void) {
+  const session = readSession(req);
+  if (session) {
     return next();
   }
-
-  // Allow permissive sandbox testing if header matches or in dev
-  if (req.headers['x-client-simulation'] === 'true' || process.env.NODE_ENV !== 'production') {
-    return next();
-  }
-
   return res.status(401).json({
     error: 'Unauthorized',
-    message: 'Invalid or missing X-Venny-Secret / Authorization Bearer token.',
-    hint: 'Provide header: X-Venny-Secret: <your_secret> or Authorization: Bearer <your_secret>'
+    message: 'Sign in with Discord to use this endpoint.'
   });
+}
+
+function verifyStaffSession(req: Request, res: Response, next: () => void) {
+  const session = readSession(req);
+  if (!session) {
+    return res.status(401).json({
+      error: 'Unauthorized',
+      message: 'Sign in with Discord to use this endpoint.'
+    });
+  }
+  if (isStaffSession(req)) {
+    return next();
+  }
+  return res.status(403).json({
+    error: 'Forbidden',
+    message: 'Staff role is required for this endpoint.'
+  });
+}
+
+function verifyBotSecretOrSession(options: { staffOnly?: boolean } = {}) {
+  return (req: Request, res: Response, next: () => void) => {
+    const token = extractBotToken(req);
+    if (hasValidBotToken(token)) {
+      return next();
+    }
+    if (token) {
+      return res.status(401).json({
+        error: 'Unauthorized',
+        message: 'Missing or invalid Venny bot secret.',
+        hint: 'Use Authorization: Bearer <VENNY_API_KEY> or X-Venny-Secret: <VENNY_API_KEY>.'
+      });
+    }
+
+    if (options.staffOnly) {
+      return verifyStaffSession(req, res, next);
+    }
+    return verifyHubSession(req, res, next);
+  };
 }
 
 async function startServer() {
   const app = express();
 
-  app.use(cors());
+  app.use(cors({ origin: true, credentials: true }));
   app.use(express.json());
+
+  // Hub-owned Discord OAuth2 member login (reuse Venny Discord app credentials)
+  registerDiscordOAuthRoutes(app, { resolveGuildMemberRoles });
 
   // -------------------------------------------------------------
   // API Routes
@@ -965,6 +1061,39 @@ async function startServer() {
       clan: 'Misclickerz',
       venny: vennyHealth
     });
+  });
+
+  // 1b. Narrow allowlisted proxy routes for the Venny upstream API
+  app.get('/api/venny/health', async (_req, res) => {
+    try {
+      const upstream = await requestVennyEndpoint('health');
+      const payload = await upstream.text();
+      const contentType = upstream.headers.get('content-type') || 'application/json; charset=utf-8';
+      res.status(upstream.status);
+      res.setHeader('content-type', contentType);
+      return res.send(payload);
+    } catch (error: any) {
+      return res.status(502).json({
+        error: 'Bad Gateway',
+        message: error?.message || 'Failed to reach Venny health endpoint.'
+      });
+    }
+  });
+
+  app.get('/api/venny/clan-now', async (_req, res) => {
+    try {
+      const upstream = await requestVennyEndpoint('clanNow');
+      const payload = await upstream.text();
+      const contentType = upstream.headers.get('content-type') || 'application/json; charset=utf-8';
+      res.status(upstream.status);
+      res.setHeader('content-type', contentType);
+      return res.send(payload);
+    } catch (error: any) {
+      return res.status(502).json({
+        error: 'Bad Gateway',
+        message: error?.message || 'Failed to reach Venny clan/now endpoint.'
+      });
+    }
   });
 
   // Discord identity role resolution for hub session mode
@@ -1073,7 +1202,7 @@ async function syncMisclick(username, detail) {
   });
 
   // 4. Universal Webhook Ingestion (for Venny Discord bot)
-  app.post(['/api/bot/webhook', '/api/bot/events'], verifyBotSecret, (req, res) => {
+  app.post(['/api/bot/webhook', '/api/bot/events'], verifyBotSecretOrSession({ staffOnly: true }), (req, res) => {
     const { event, data = {}, username = 'Discord Member' } = req.body;
     state.botStatus.eventsReceived++;
     state.botStatus.lastPing = new Date().toISOString();
@@ -1187,7 +1316,7 @@ async function syncMisclick(username, detail) {
   });
 
   // 5. Dedicated Misclick Route
-  app.post('/api/bot/misclick', verifyBotSecret, (req, res) => {
+  app.post('/api/bot/misclick', verifyBotSecretOrSession(), (req, res) => {
     const { username = 'Clan Member', detail = 'Logged via Venny bot' } = req.body;
     state.lastMisclickTime = new Date().toISOString();
     state.totalMisclicks++;
@@ -1214,7 +1343,7 @@ async function syncMisclick(username, detail) {
   });
 
   // 6. Dedicated Loot Drop Route
-  app.post('/api/bot/drop', verifyBotSecret, (req, res) => {
+  app.post('/api/bot/drop', verifyBotSecretOrSession({ staffOnly: true }), (req, res) => {
     const { username, itemName, value, source, itemUrl, rarity = 'rare' } = req.body;
     const act = {
       id: `act-${Date.now()}`,
@@ -1260,7 +1389,7 @@ async function syncMisclick(username, detail) {
     res.json(state.members);
   });
 
-  app.post('/api/bot/leaderboard/sync', verifyBotSecret, (req, res) => {
+  app.post('/api/bot/leaderboard/sync', verifyBotSecretOrSession({ staffOnly: true }), (req, res) => {
     const { members } = req.body;
     if (Array.isArray(members)) {
       state.members = members;
@@ -1318,7 +1447,7 @@ async function syncMisclick(username, detail) {
     res.json(snapshot.bingo?.tiles || []);
   });
 
-  app.post('/api/bingo/:id/complete', async (req, res) => {
+  app.post('/api/bingo/:id/complete', verifyStaffSession, async (req, res) => {
     const snapshot = await getClanNowSnapshot();
     if (!snapshot.bingo) {
       return res.status(409).json({ error: 'No bingo campaign running' });
@@ -1351,7 +1480,7 @@ async function syncMisclick(username, detail) {
     res.json({ success: true, tile });
   });
 
-  app.post('/api/bingo/:id/reset', async (req, res) => {
+  app.post('/api/bingo/:id/reset', verifyStaffSession, async (req, res) => {
     const snapshot = await getClanNowSnapshot();
     if (!snapshot.bingo) {
       return res.status(409).json({ error: 'No bingo campaign running' });
@@ -1377,7 +1506,7 @@ async function syncMisclick(username, detail) {
     res.json(state.rewardAnnouncements || []);
   });
 
-  app.post('/api/rewards/announce', (req, res) => {
+  app.post('/api/rewards/announce', verifyStaffSession, (req, res) => {
     const { 
       competitionTitle, 
       eventType = 'Skill of the Week', 
@@ -1445,7 +1574,7 @@ async function syncMisclick(username, detail) {
     res.json({ success: true, reward: newReward });
   });
 
-  app.post('/api/rewards/:id/claim', (req, res) => {
+  app.post('/api/rewards/:id/claim', verifyStaffSession, (req, res) => {
     const { id } = req.params;
     const { username } = req.body;
     const reward = state.rewardAnnouncements.find(r => r.id === id);

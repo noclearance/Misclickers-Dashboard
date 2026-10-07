@@ -178,13 +178,13 @@ const AppContent: React.FC = () => {
               <ShieldAlert className="w-4 h-4 text-rose-400 shrink-0" />
               <span>
                 <strong className="font-semibold text-rose-100">401 Unauthorized:</strong>{' '}
-                {unauthorizedError.message || 'API request rejected. Please verify your VITE_VENNY_API_KEY.'}
+                {unauthorizedError.message || 'API request rejected. Please verify the server-side Venny integration configuration.'}
               </span>
             </div>
             <div className="flex items-center gap-2">
               <button onClick={() => setIsVennyModalOpen(true)} className="flex items-center gap-1 bg-rose-800/60 hover:bg-rose-700/80 text-rose-100 px-2.5 py-1 rounded text-[11px] font-medium transition-colors border border-rose-500/30">
                 <KeyRound className="w-3 h-3" />
-                <span>Configure Key</span>
+                <span>Open Bot Hub</span>
               </button>
               <button onClick={() => setUnauthorizedError(null)} className="text-rose-400 hover:text-rose-200 p-1 transition-colors" aria-label="Dismiss unauthorized warning">
                 <X className="w-4 h-4" />

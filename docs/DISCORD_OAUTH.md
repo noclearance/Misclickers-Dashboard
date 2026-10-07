@@ -26,7 +26,9 @@ Set these on the `misclickerz-hub` service (never commit real values):
 | `SESSION_SECRET` | Random long string; signs session cookie |
 | `DISCORD_BOT_TOKEN` | Existing Venny/hub bot token (guild member lookup) |
 | `DISCORD_GUILD_ID` | Misclickerz guild snowflake |
-| `VENNY_API_KEY` / `VITE_VENNY_API_KEY` | Keep as today |
+| `VENNY_API_KEY` | Server-only Venny secret used by hub backend for upstream auth |
+| `VENNY_API_URL` | Optional server-only base URL (defaults to `https://grazybot.onrender.com`) |
+| `VENNY_CLAN_NOW_URL` | Optional explicit override for clan/now endpoint; when set, overrides `${VENNY_API_URL}/api/clan/now` |
 | `VITE_STAFF_ROLE_IDS` | Keep as today (staff mode from resolved roleIds) |
 
 ## Portal steps for Caleb (Venny Discord app)

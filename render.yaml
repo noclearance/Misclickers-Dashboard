@@ -7,7 +7,7 @@ services:
     envVars:
       - key: VENNY_API_KEY
         sync: false
-      - key: VITE_VENNY_API_KEY
+      - key: VENNY_API_URL
         sync: false
       - key: VITE_STAFF_ROLE_IDS
         sync: false
