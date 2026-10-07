@@ -413,7 +413,7 @@ const VENNY_PROXY_TARGETS: Record<AllowedVennyEndpoint, VennyProxyTarget> = {
   }
 };
 
-async function requestVennyEndpoint(endpoint: AllowedVennyEndpoint): Promise<Response> {
+async function requestVennyEndpoint(endpoint: AllowedVennyEndpoint): Promise<globalThis.Response> {
   const target = VENNY_PROXY_TARGETS[endpoint];
   const headers: Record<string, string> = {
     Accept: target.accept
