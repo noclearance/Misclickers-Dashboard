@@ -27,17 +27,16 @@ src = src.replace(
   "import { createServer as createViteServer } from 'vite';\n" + importLine,
 );
 
-const corsNeedle = '  app.use(cors());\n  app.use(express.json());\n';
-const corsReplacement =
-  '  app.use(cors({ origin: true, credentials: true }));\n' +
+const expressJsonNeedle = '  app.use(express.json());\n';
+const expressJsonReplacement =
   '  app.use(express.json());\n\n' +
   '  // Hub-owned Discord OAuth2 member login (reuse Venny Discord app credentials)\n' +
   '  registerDiscordOAuthRoutes(app, { resolveGuildMemberRoles });\n';
 
-if (!src.includes(corsNeedle)) {
-  console.error('[wire-discord-oauth] unexpected server.ts — cors()/express.json() block not found');
+if (!src.includes(expressJsonNeedle)) {
+  console.error('[wire-discord-oauth] unexpected server.ts — express.json() block not found');
   process.exit(1);
 }
-src = src.replace(corsNeedle, corsReplacement);
+src = src.replace(expressJsonNeedle, expressJsonReplacement);
 fs.writeFileSync(serverPath, src);
 console.log('[wire-discord-oauth] wired Discord OAuth into server.ts');

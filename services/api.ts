@@ -15,8 +15,6 @@ import type {
 import {
   http,
   apiClient,
-  getVennyApiKey,
-  setVennyApiKey,
   onUnauthorized,
   notifyUnauthorized,
   ApiError,
@@ -33,8 +31,6 @@ import {
 export {
   http,
   apiClient,
-  getVennyApiKey,
-  setVennyApiKey,
   onUnauthorized,
   notifyUnauthorized,
   ApiError,
@@ -498,8 +494,6 @@ export function subscribeToBotEvents(
 const VennyApi = {
   client: apiClient,
   http,
-  getVennyApiKey,
-  setVennyApiKey,
   onUnauthorized,
   notifyUnauthorized,
   // Player rankings
