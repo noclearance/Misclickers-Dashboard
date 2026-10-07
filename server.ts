@@ -19,6 +19,22 @@ const STAFF_ROLE_IDS = (process.env.VITE_STAFF_ROLE_IDS || '')
   .split(',')
   .map((roleId) => roleId.trim())
   .filter(Boolean);
+const DEFAULT_HUB_ALLOWED_ORIGINS = [
+  'https://misclickerz-hub.onrender.com',
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  'http://localhost:4173',
+  'http://127.0.0.1:4173'
+];
+const HUB_ALLOWED_ORIGINS = (process.env.HUB_ALLOWED_ORIGINS || '')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+const ALLOWED_CORS_ORIGINS = new Set(
+  [...DEFAULT_HUB_ALLOWED_ORIGINS, ...HUB_ALLOWED_ORIGINS].map((origin) => origin.replace(/\/+$/, ''))
+);
 
 // In-Memory Database State (persisted while server is up, synced with Wise Old Man & Venny bot)
 interface ServerState {
@@ -1038,10 +1054,34 @@ function verifyBotSecretOrSession(options: { staffOnly?: boolean } = {}) {
   };
 }
 
+function isCorsOriginAllowed(origin: string | undefined): boolean {
+  if (!origin) return true;
+  return ALLOWED_CORS_ORIGINS.has(origin.replace(/\/+$/, ''));
+}
+
 async function startServer() {
   const app = express();
 
-  app.use(cors({ origin: true, credentials: true }));
+  app.use((req, res, next) => {
+    const requestOrigin = req.get('origin');
+    if (!requestOrigin || isCorsOriginAllowed(requestOrigin)) {
+      return next();
+    }
+    return res.status(403).json({
+      error: 'Forbidden',
+      message: `Origin ${requestOrigin} is not allowed.`
+    });
+  });
+
+  app.use(cors({
+    credentials: true,
+    origin: (origin, callback) => {
+      if (isCorsOriginAllowed(origin)) {
+        return callback(null, true);
+      }
+      return callback(null, false);
+    }
+  }));
   app.use(express.json());
 
   // Hub-owned Discord OAuth2 member login (reuse Venny Discord app credentials)

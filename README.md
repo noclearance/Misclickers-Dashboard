@@ -18,6 +18,9 @@ Production (Render): `npm ci && npm run build` then `npm start` (see `render.yam
 - `VENNY_API_URL` (**server-only, optional**) — defaults to `https://grazybot.onrender.com`.
 - `VENNY_CLAN_NOW_URL` (**server-only, optional override**) — when set, this takes precedence over `VENNY_API_URL` for clan-now fetches.
 - `VITE_STAFF_ROLE_IDS` (public, non-secret) — comma-separated Discord role IDs used for staff-mode gating.
+- `HUB_ALLOWED_ORIGINS` (optional) — comma-separated extra CORS origins for custom domains.
+  - Built-in allowlist includes `https://misclickerz-hub.onrender.com` and localhost dev origins (`localhost` / `127.0.0.1` on ports `3000`, `5173`, `4173`).
+  - Requests with no `Origin` header (same-origin/non-browser) are still accepted.
 
 The browser no longer reads or sends a Venny API key.
 

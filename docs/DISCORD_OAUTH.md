@@ -71,7 +71,10 @@ Member-facing modal copy stays soft (no snowflake / identify / httpOnly / Venny 
 
 `server.ts` is wired via `scripts/wire-discord-oauth.mjs` (idempotent). npm `predev` / `prebuild` and Render `buildCommand` run `npm run wire:oauth` so Express gets:
 
-- `cors({ origin: true, credentials: true })`
+- credentialed CORS with an explicit allowlist:
+  - default: `https://misclickerz-hub.onrender.com` plus localhost dev origins
+  - optional extension: `HUB_ALLOWED_ORIGINS` (comma-separated)
+  - requests with no `Origin` header still pass
 - `registerDiscordOAuthRoutes(app, { resolveGuildMemberRoles })`
 
 If you already see those lines in `server.ts`, the script is a no-op.
