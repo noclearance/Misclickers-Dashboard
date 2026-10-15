@@ -28,11 +28,15 @@ function redirectUri(): string {
 }
 
 function clientId(): string {
-  return process.env.DISCORD_CLIENT_ID?.trim() || '';
+  const value = process.env.DISCORD_CLIENT_ID?.trim();
+  if (!value) throw new Error('DISCORD_CLIENT_ID is required');
+  return value;
 }
 
 function clientSecret(): string {
-  return process.env.DISCORD_CLIENT_SECRET?.trim() || '';
+  const value = process.env.DISCORD_CLIENT_SECRET?.trim();
+  if (!value) throw new Error('DISCORD_CLIENT_SECRET is required');
+  return value;
 }
 
 function avatarUrl(user: { id: string; avatar?: string | null }): string {

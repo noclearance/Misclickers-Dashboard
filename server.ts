@@ -6,15 +6,15 @@ import { registerDiscordOAuthRoutes } from './server/auth/discordOAuth';
 import { readSession, sessionSecretConfigured } from './server/auth/session';
 
 const PORT = Number(process.env.PORT || 3000);
-const VENNY_SECRET = process.env.VENNY_API_KEY?.trim() || '';
+const VENNY_SECRET = process.env.VENNY_API_KEY?.trim();
 const VENNY_API_URL = (process.env.VENNY_API_URL?.trim() || 'https://grazybot.onrender.com').replace(/\/+$/, '');
 const VENNY_CLAN_NOW_URL = process.env.VENNY_CLAN_NOW_URL?.trim() || `${VENNY_API_URL}/api/clan/now`;
 const WOM_GROUP_ID = Number(process.env.WOM_GROUP_ID) || 24942; // Misclickerz
 const WOM_API_KEY = process.env.WOM_API_KEY || process.env.WISEOLDMAN_API_KEY || '';
 const VENNY_HEALTH_URL = `${VENNY_API_URL}/health`;
 const CLAN_NOW_CACHE_MS = Number(process.env.CLAN_NOW_CACHE_MS) || 30_000;
-const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN?.trim() || '';
-const DISCORD_GUILD_ID = process.env.DISCORD_GUILD_ID?.trim() || '';
+const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN?.trim();
+const DISCORD_GUILD_ID = process.env.DISCORD_GUILD_ID?.trim();
 const STAFF_ROLE_IDS = (process.env.VITE_STAFF_ROLE_IDS || '')
   .split(',')
   .map((roleId) => roleId.trim())
