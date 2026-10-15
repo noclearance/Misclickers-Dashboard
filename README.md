@@ -36,7 +36,7 @@ Clan members use **Login with Discord** (OAuth2). See **[docs/DISCORD_OAUTH.md](
 
 | Script | Purpose |
 |--------|---------|
-| `npm run dev` | Express + Vite middleware |
+| `npm run dev` | Express + Vite middleware (`NODE_ENV=development`) |
 | `npm run build` | Vite client + esbuild server bundle |
 | `npm start` | Run `dist/server.cjs` |
 | `npm run lint` | `tsc --noEmit` |

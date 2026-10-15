@@ -20,10 +20,6 @@ export interface HubSessionPayload {
 function getSessionSecret(): string {
   const secret = process.env.SESSION_SECRET?.trim();
   if (secret) return secret;
-  // Dev-only fallback so local boots without SESSION_SECRET; prod must set it.
-  if (process.env.NODE_ENV !== 'production') {
-    return 'dev-insecure-session-secret-change-me';
-  }
   return '';
 }
 
@@ -163,7 +159,7 @@ export function consumeOAuthStateCookie(req: Request, res: Response): string | n
 }
 
 export function sessionSecretConfigured(): boolean {
-  return Boolean(process.env.SESSION_SECRET?.trim()) || process.env.NODE_ENV !== 'production';
+  return Boolean(process.env.SESSION_SECRET?.trim());
 }
 
 export function getSessionSecretOrEmpty(): string {
