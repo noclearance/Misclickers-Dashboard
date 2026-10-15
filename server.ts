@@ -3,18 +3,18 @@ import cors from 'cors';
 import path from 'path';
 import { createServer as createViteServer } from 'vite';
 import { registerDiscordOAuthRoutes } from './server/auth/discordOAuth';
-import { readSession } from './server/auth/session';
+import { readSession, sessionSecretConfigured } from './server/auth/session';
 
 const PORT = Number(process.env.PORT || 3000);
-const VENNY_SECRET = process.env.VENNY_API_KEY?.trim() || '';
+const VENNY_SECRET = process.env.VENNY_API_KEY?.trim();
 const VENNY_API_URL = (process.env.VENNY_API_URL?.trim() || 'https://grazybot.onrender.com').replace(/\/+$/, '');
 const VENNY_CLAN_NOW_URL = process.env.VENNY_CLAN_NOW_URL?.trim() || `${VENNY_API_URL}/api/clan/now`;
 const WOM_GROUP_ID = Number(process.env.WOM_GROUP_ID) || 24942; // Misclickerz
 const WOM_API_KEY = process.env.WOM_API_KEY || process.env.WISEOLDMAN_API_KEY || '';
 const VENNY_HEALTH_URL = `${VENNY_API_URL}/health`;
 const CLAN_NOW_CACHE_MS = Number(process.env.CLAN_NOW_CACHE_MS) || 30_000;
-const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN?.trim() || '';
-const DISCORD_GUILD_ID = process.env.DISCORD_GUILD_ID?.trim() || '';
+const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN?.trim();
+const DISCORD_GUILD_ID = process.env.DISCORD_GUILD_ID?.trim();
 const STAFF_ROLE_IDS = (process.env.VITE_STAFF_ROLE_IDS || '')
   .split(',')
   .map((roleId) => roleId.trim())
@@ -1002,7 +1002,7 @@ function extractBotToken(req: Request): string {
 function hasValidBotToken(token: string): boolean {
   if (!token) return false;
   if (VENNY_SECRET && token === VENNY_SECRET) return true;
-  return process.env.NODE_ENV !== 'production' && token === 'venny-dev-token';
+  return process.env.NODE_ENV === 'development' && token === 'venny-dev-token';
 }
 
 function verifyHubSession(req: Request, res: Response, next: () => void) {
@@ -1060,6 +1060,9 @@ function isCorsOriginAllowed(origin: string | undefined): boolean {
 }
 
 async function startServer() {
+  if (process.env.NODE_ENV === 'production' && !sessionSecretConfigured()) {
+    throw new Error('SESSION_SECRET must be set when NODE_ENV=production.');
+  }
   const app = express();
 
   app.use((req, res, next) => {
@@ -1198,7 +1201,7 @@ import aiohttp
 import os
 
 WEB_HUB_URL = "${baseUrl}/api/bot/webhook"
-SECRET_KEY = os.getenv("VENNY_API_KEY", "configured-secret")
+SECRET_KEY = os.environ["VENNY_API_KEY"]
 
 async def send_web_event(event_type: str, data: dict):
     headers = {"X-Venny-Secret": SECRET_KEY, "Content-Type": "application/json"}
@@ -1214,11 +1217,13 @@ async def send_web_event(event_type: str, data: dict):
 const fetch = require('node-fetch');
 
 async function syncMisclick(username, detail) {
+  const secret = process.env.VENNY_API_KEY;
+  if (!secret) throw new Error('VENNY_API_KEY is required');
   await fetch('${baseUrl}/api/bot/misclick', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-Venny-Secret': process.env.VENNY_API_KEY || 'configured-secret'
+      'X-Venny-Secret': secret
     },
     body: JSON.stringify({ username, detail })
   });
